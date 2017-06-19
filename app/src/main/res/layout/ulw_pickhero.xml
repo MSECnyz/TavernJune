@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:padding="20dp">
+
+    <GridView
+        android:layout_marginLeft="20dp"
+        android:id="@+id/herogrid"
+        android:numColumns="5"
+        android:verticalSpacing="5dp"
+        android:horizontalSpacing="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="13"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <TextView
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="40dp"
+            android:gravity="left"
+            android:layout_gravity="center_vertical"
+            android:id="@+id/bp_msg"
+            android:text="playerX正在选择角色"
+            android:textColor="#FFFFFF"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="80dp"
+            android:textColor="#FFFFFF"
+            android:text="剩余选择时间"/>
+        <TextView
+            android:layout_marginLeft="15dp"
+            android:id="@+id/picktime"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textColor="#FFFFFF"
+            android:text="15"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        android:layout_weight="2">
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="4">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="已选角色:"
+                android:layout_gravity="center_vertical"
+                android:textSize="15dp"
+                android:textColor="#FFFFFF"/>
+
+            <ImageView
+                android:layout_marginLeft="5dp"
+                android:id="@+id/pickhero1"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp" />
+            <ImageView
+                android:layout_marginLeft="5dp"
+                android:id="@+id/pickhero2"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp" />
+            <ImageView
+                android:layout_marginLeft="5dp"
+                android:id="@+id/pickhero3"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp" />
+            <ImageView
+                android:layout_marginLeft="5dp"
+                android:id="@+id/pickhero4"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp" />
+            <ImageView
+                android:layout_marginLeft="5dp"
+                android:id="@+id/pickhero5"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp" />
+            <ImageView
+                android:layout_marginLeft="5dp"
+                android:id="@+id/pickhero6"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp" />
+            <ImageView
+                android:layout_marginLeft="5dp"
+                android:id="@+id/pickhero7"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp" />
+            <ImageView
+                android:layout_marginLeft="5dp"
+                android:id="@+id/pickhero8"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp" />
+            <ImageView
+                android:layout_marginLeft="5dp"
+                android:id="@+id/pickhero9"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp" />
+            <ImageView
+                android:layout_marginLeft="5dp"
+                android:id="@+id/pickhero10"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp" />
+            <ImageView
+                android:layout_marginLeft="5dp"
+                android:id="@+id/pickhero11"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp" />
+            <ImageView
+                android:layout_marginLeft="5dp"
+                android:id="@+id/pickhero12"
+                android:layout_gravity="center_vertical"
+                android:layout_width="24dp"
+                android:layout_height="24dp" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+            <Button
+                android:id="@+id/pickconfirm"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="确认选择"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>
