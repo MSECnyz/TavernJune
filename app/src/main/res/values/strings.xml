@@ -2,4 +2,15 @@
     <string name="app_name">TavernJune</string>
     <string name="ulwtips">\"曾经我没得选，现在我只想做个好人。\"</string>
     <string name="username">我的名字</string>
+    <string name="Alpha狼">狼Alpha</string>
+    <string name="狼人">狼人</string>
+    <string name="狼先知">狼先知</string>
+    <string name="幽灵">幽灵</string>
+    <string name="失眠者">失眠者</string>
+    <string name="皮匠">皮匠</string>
+    <string name="强盗">强盗</string>
+    <string name="预言家">预言家</string>
+    <string name="捣蛋鬼">捣蛋鬼</string>
+    <string name="女巫">女巫</string>
+
 </resources>

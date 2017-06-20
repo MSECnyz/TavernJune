@@ -46,6 +46,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -71,19 +72,33 @@ public class GameAcitvity extends AppCompatActivity {
     private GameMsgAdapter adapter;
     private SocketOperation gameSocket;
     private String userName,heroName;
-    private int countdown = 15;
+    private String whosName = "#p$l%a&y^e$r";
+    private boolean beSelected = false;
+    private boolean onlyWolfOr=false;
+    private PopupWindow pickWindow;
+    private int countdown = 10;
     final private static int NO_NEED_PICK = 0;
     final private static int NEED_PICK = 1;
     final private static int PICKING = 2;
+    final private static int PICKOVER = 3;
     private static int pickOrNot = -1;
     private LinearLayout leftLL,rightLL,backLL,playerLLL1,playerLLL2,playerLLL3,playerLLL4,playerLLL5,
             playerLLL6,playerLLL7,playerLLL8, playerLLL9,playerLLL10,playerLLL11,playerLLL12;
+    private ArrayList<String> heroNumber = new ArrayList<>();
+    private ArrayList<String> wolfList = new ArrayList<>();
+    private int startHeroNumber = 10;
+    private int startwolfNumber = 3;
+    private int userNumber = -1;
     private  GridView gridView;
 
     private Handler handler = new Handler(){
         //若Activity没创建完成就收到消息会报异常
         @Override
         public void handleMessage(Message msg) {
+
+            String theMsg,heroName;
+            int chooseType;
+
             if (pickOrNot == NEED_PICK){
                 pickWindow();
                 pickOrNot = PICKING;
@@ -99,21 +114,30 @@ public class GameAcitvity extends AppCompatActivity {
                     playerLocationList.get(i).setVisibility(View.GONE);
                 }
             }else if (pickOrNot == PICKING){
-
-                String theMsg,whosName,heroName;
-                int userNumber;
                 theMsg = (String)msg.obj;
                 try {
                     playerJson = new JSONObject(theMsg);
                     whosName = playerJson.getString("typeK");
                     heroName = playerJson.getString("messageK");
                     userNumber = playerJson.getInt("overK");
-                    System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa          "+userNumber);
+                    chooseType= playerJson.getInt("chooseTypeK");
                     if (whosName.equals(userName)){
+                        beSelected = false;
+                        if (userNumber==0){
+                            onlyWolfOr=onlyWolf(0);
+                        }else if (userNumber==1){
+                            onlyWolfOr=onlyWolf(0);
+                        }
                         pickConfirm.setEnabled(true);
                         pickConfirm.setVisibility(View.VISIBLE);
                     }
-                    bpMsg.setText(whosName+"正在选择角色");
+                    if (chooseType==0) {
+                        String first = whosName + "正在选择角色";
+                        bpMsg.setText(first);
+                    }else if (chooseType==1){
+                        String second = whosName + "正在进行额外选择";
+                        bpMsg.setText(second);
+                    }
 
                     heroBeSelected(heroName,userNumber);
 
@@ -122,10 +146,8 @@ public class GameAcitvity extends AppCompatActivity {
                 }
 
                 if (pickTimer!=null){
-                    countdown = 15;
+                    countdown = 10;
                     pickTimer.cancel();
-//                    pickTimer = null;
-//                    pickTimerTask = null;
                     pickTimer = new Timer();
                     pickTimerTask = new TimerTask() {
                         @Override
@@ -135,10 +157,9 @@ public class GameAcitvity extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     countdown--;
-                                    pickTime.setText(""+countdown);
+                                    pickTime.setText(String.valueOf(countdown));
                                     if (countdown==0){
-                                        countdown = 15;
-                                        pickTimer.cancel();
+                                        autoPickHero();
                                     }
                                 }
                             });
@@ -149,6 +170,57 @@ public class GameAcitvity extends AppCompatActivity {
                         pickTimer = new Timer();
                         pickTimer.schedule(pickTimerTask, 1000, 1000);
                 }
+
+                if(whosName.equals("选择结束")){
+                    pickOrNot = PICKOVER;
+                    pickTimer.cancel();
+                    Timer blink = new Timer();
+                    TimerTask blinkTask = new TimerTask() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    pickWindow.dismiss();
+                                }
+                            });
+                        }
+                    };
+                    blink.schedule(blinkTask,3000);
+                }
+            }else if (pickOrNot == PICKOVER){
+                String myCard = "天神";
+                String centerCard1 = "1";
+                String centerCard2 = "2";
+                String centerCard3 = "3";
+                theMsg = (String)msg.obj;
+                try {
+                    playerJson = new JSONObject(theMsg);
+                    centerCard1 = playerJson.getString("pubHero1K");
+                    centerCard2 = playerJson.getString("pubHero2K");
+                    centerCard3 = playerJson.getString("pubHero3K");
+                    myCard = playerJson.getString("playerHeroK");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                abChat.setText(centerCard1);
+                audioChat.setText(centerCard2);
+                exit.setText(centerCard3);
+
+                AlertDialog.Builder dialog = new AlertDialog.Builder(GameAcitvity.this);
+                dialog.setTitle("你的角色是");
+                dialog.setMessage(myCard);
+                dialog.setCancelable(true);
+                dialog.setPositiveButton("好的", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                dialog.show();
+
             }
         }
     };
@@ -393,7 +465,7 @@ public class GameAcitvity extends AppCompatActivity {
 
     private void pickWindow(){
         View view = LayoutInflater.from(this).inflate(R.layout.ulw_pickhero,null);
-        PopupWindow pickWindow = new PopupWindow(view,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+        pickWindow = new PopupWindow(view,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
         if (heroList.size()==0){
             initList();
         }
@@ -441,6 +513,7 @@ public class GameAcitvity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 heroName = heroAdapter.changeSelectItem(position);
+                beSelected = true;
             }
         });
         pickConfirm.setOnClickListener(new View.OnClickListener() {
@@ -450,65 +523,134 @@ public class GameAcitvity extends AppCompatActivity {
                 rightLL.setVisibility(View.VISIBLE);
                 backLL.setBackgroundResource(0);
 
-                JSONObject pickJson = new JSONObject();
-                try {
-                    pickJson.put("typeK","选择完毕");
-                    pickJson.put("messageK",heroName);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                if (beSelected) {
+
+                    JSONObject pickJson = new JSONObject();
+                    try {
+                        pickJson.put("typeK", "选择完毕");
+                        pickJson.put("messageK", heroName);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    gameSocket.gameMsgToServer(pickJson.toString());
+
+                    pickConfirm.setVisibility(View.INVISIBLE);
+                    pickConfirm.setEnabled(false);
+                }else {
+                    autoPickHero();
                 }
 
-                gameSocket.gameMsgToServer(pickJson.toString());
+                if (onlyWolfOr){
+                    onlyWolfOr = onlyWolf(1);
+                }
 
-                pickConfirm.setVisibility(View.INVISIBLE);
-                pickConfirm.setEnabled(false);
             }
         });
     }
 
     private void heroBeSelected(String heroName,int userNumber){
         switch (heroName){
-            case "Alpha狼":
+            case "狼Alpha":
+                startHeroNumber--;
+                startwolfNumber--;
+                heroNumber.remove(GameAcitvity.this.getString(R.string.Alpha狼));
+                wolfList.remove(GameAcitvity.this.getString(R.string.Alpha狼));
                 gridView.getChildAt(0).setVisibility(View.INVISIBLE);
+                gridView.getChildAt(0).setEnabled(false);
                 selectedList.get(userNumber-1).setImageResource(R.drawable.ulw_alphawolf);
                 break;
             case "狼人":
+                startHeroNumber--;
+                startwolfNumber--;
+                heroNumber.remove(GameAcitvity.this.getString(R.string.狼人));
+                wolfList.remove(GameAcitvity.this.getString(R.string.狼人));
                 gridView.getChildAt(1).setVisibility(View.INVISIBLE);
+                gridView.getChildAt(1).setEnabled(false);
                 selectedList.get(userNumber-1).setImageResource(R.drawable.ulw_werewolf);
                 break;
             case "狼先知":
+                startHeroNumber--;
+                startwolfNumber--;
+                heroNumber.remove(GameAcitvity.this.getString(R.string.狼先知));
+                wolfList.remove(GameAcitvity.this.getString(R.string.狼先知));
                 gridView.getChildAt(2).setVisibility(View.INVISIBLE);
+                gridView.getChildAt(2).setEnabled(false);
                 selectedList.get(userNumber-1).setImageResource(R.drawable.ulw_mysticwolf);
                 break;
             case "幽灵":
+                startHeroNumber--;
+                heroNumber.remove(GameAcitvity.this.getString(R.string.幽灵));
                 gridView.getChildAt(3).setVisibility(View.INVISIBLE);
+                gridView.getChildAt(3).setEnabled(false);
                 selectedList.get(userNumber-1).setImageResource(R.drawable.ulw_doppelganger);
                 break;
             case "失眠者":
+                startHeroNumber--;
+                heroNumber.remove(GameAcitvity.this.getString(R.string.失眠者));
                 gridView.getChildAt(4).setVisibility(View.INVISIBLE);
+                gridView.getChildAt(4).setEnabled(false);
                 selectedList.get(userNumber-1).setImageResource(R.drawable.ulw_insomniac);
                 break;
             case "皮匠":
+                startHeroNumber--;
+                heroNumber.remove(GameAcitvity.this.getString(R.string.皮匠));
                 gridView.getChildAt(5).setVisibility(View.INVISIBLE);
+                gridView.getChildAt(5).setEnabled(false);
                 selectedList.get(userNumber-1).setImageResource(R.drawable.ulw_minion);
                 break;
             case "强盗":
+                startHeroNumber--;
+                heroNumber.remove(GameAcitvity.this.getString(R.string.强盗));
                 gridView.getChildAt(6).setVisibility(View.INVISIBLE);
+                gridView.getChildAt(6).setEnabled(false);
                 selectedList.get(userNumber-1).setImageResource(R.drawable.ulw_robber);
                 break;
             case "预言家":
+                startHeroNumber--;
+                heroNumber.remove(GameAcitvity.this.getString(R.string.预言家));
                 gridView.getChildAt(7).setVisibility(View.INVISIBLE);
+                gridView.getChildAt(7).setEnabled(false);
                 selectedList.get(userNumber-1).setImageResource(R.drawable.ulw_seer);
                 break;
             case "捣蛋鬼":
+                startHeroNumber--;
+                heroNumber.remove(GameAcitvity.this.getString(R.string.捣蛋鬼));
                 gridView.getChildAt(8).setVisibility(View.INVISIBLE);
+                gridView.getChildAt(8).setEnabled(false);
                 selectedList.get(userNumber-1).setImageResource(R.drawable.ulw_troublemaker);
                 break;
             case "女巫":
+                startHeroNumber--;
+                heroNumber.remove(GameAcitvity.this.getString(R.string.女巫));
                 gridView.getChildAt(9).setVisibility(View.INVISIBLE);
+                gridView.getChildAt(9).setEnabled(false);
                 selectedList.get(userNumber-1).setImageResource(R.drawable.ulw_witch);
                 break;
         }
+    }
+
+    private boolean onlyWolf(int type){
+        if (type == 0) {
+            gridView.getChildAt(3).setVisibility(View.INVISIBLE);
+            gridView.getChildAt(4).setVisibility(View.INVISIBLE);
+            gridView.getChildAt(5).setVisibility(View.INVISIBLE);
+            gridView.getChildAt(6).setVisibility(View.INVISIBLE);
+            gridView.getChildAt(7).setVisibility(View.INVISIBLE);
+            gridView.getChildAt(8).setVisibility(View.INVISIBLE);
+            gridView.getChildAt(9).setVisibility(View.INVISIBLE);
+            return true;
+        }else if (type == 1){
+            gridView.getChildAt(3).setVisibility(View.VISIBLE);
+            gridView.getChildAt(4).setVisibility(View.VISIBLE);
+            gridView.getChildAt(5).setVisibility(View.VISIBLE);
+            gridView.getChildAt(6).setVisibility(View.VISIBLE);
+            gridView.getChildAt(7).setVisibility(View.VISIBLE);
+            gridView.getChildAt(8).setVisibility(View.VISIBLE);
+            gridView.getChildAt(9).setVisibility(View.VISIBLE);
+            return false;
+        }
+        return false;
     }
 
     private void exchangeCard(){
@@ -534,26 +676,39 @@ public class GameAcitvity extends AppCompatActivity {
     }
 
     private void initList(){
-        ImageTextItem option1 = new ImageTextItem("Alpha狼",R.drawable.ulw_alphawolf);
+        ImageTextItem option1 = new ImageTextItem(GameAcitvity.this.getString(R.string.Alpha狼),R.drawable.ulw_alphawolf);
         heroList.add(option1);
-        ImageTextItem option9 = new ImageTextItem("狼人",R.drawable.ulw_werewolf);
+        heroNumber.add(GameAcitvity.this.getString(R.string.Alpha狼));
+        wolfList.add(GameAcitvity.this.getString(R.string.Alpha狼));
+        ImageTextItem option9 = new ImageTextItem(GameAcitvity.this.getString(R.string.狼人),R.drawable.ulw_werewolf);
         heroList.add(option9);
-        ImageTextItem option5 = new ImageTextItem("狼先知",R.drawable.ulw_mysticwolf);
+        heroNumber.add(GameAcitvity.this.getString(R.string.狼人));
+        wolfList.add(GameAcitvity.this.getString(R.string.狼人));
+        ImageTextItem option5 = new ImageTextItem(GameAcitvity.this.getString(R.string.狼先知),R.drawable.ulw_mysticwolf);
         heroList.add(option5);
-        ImageTextItem option2 = new ImageTextItem("幽灵",R.drawable.ulw_doppelganger);
+        heroNumber.add(GameAcitvity.this.getString(R.string.狼先知));
+        wolfList.add(GameAcitvity.this.getString(R.string.狼先知));
+        ImageTextItem option2 = new ImageTextItem(GameAcitvity.this.getString(R.string.幽灵),R.drawable.ulw_doppelganger);
         heroList.add(option2);
-        ImageTextItem option3 = new ImageTextItem("失眠者",R.drawable.ulw_insomniac);
+        heroNumber.add(GameAcitvity.this.getString(R.string.幽灵));
+        ImageTextItem option3 = new ImageTextItem(GameAcitvity.this.getString(R.string.失眠者),R.drawable.ulw_insomniac);
         heroList.add(option3);
-        ImageTextItem option4 = new ImageTextItem("皮匠",R.drawable.ulw_minion);
+        heroNumber.add(GameAcitvity.this.getString(R.string.失眠者));
+        ImageTextItem option4 = new ImageTextItem(GameAcitvity.this.getString(R.string.皮匠),R.drawable.ulw_minion);
         heroList.add(option4);
-        ImageTextItem option6 = new ImageTextItem("强盗",R.drawable.ulw_robber);
+        heroNumber.add(GameAcitvity.this.getString(R.string.皮匠));
+        ImageTextItem option6 = new ImageTextItem(GameAcitvity.this.getString(R.string.强盗),R.drawable.ulw_robber);
         heroList.add(option6);
-        ImageTextItem option7 = new ImageTextItem("预言家",R.drawable.ulw_seer);
+        heroNumber.add(GameAcitvity.this.getString(R.string.强盗));
+        ImageTextItem option7 = new ImageTextItem(GameAcitvity.this.getString(R.string.预言家),R.drawable.ulw_seer);
         heroList.add(option7);
-        ImageTextItem option8 = new ImageTextItem("捣蛋鬼",R.drawable.ulw_troublemaker);
+        heroNumber.add(GameAcitvity.this.getString(R.string.预言家));
+        ImageTextItem option8 = new ImageTextItem(GameAcitvity.this.getString(R.string.捣蛋鬼),R.drawable.ulw_troublemaker);
         heroList.add(option8);
-        ImageTextItem option10 = new ImageTextItem("女巫",R.drawable.ulw_witch);
+        heroNumber.add(GameAcitvity.this.getString(R.string.捣蛋鬼));
+        ImageTextItem option10 = new ImageTextItem(GameAcitvity.this.getString(R.string.女巫),R.drawable.ulw_witch);
         heroList.add(option10);
+        heroNumber.add(GameAcitvity.this.getString(R.string.女巫));
     }
 
     View.OnClickListener clickMove = new View.OnClickListener() {
@@ -587,13 +742,69 @@ public class GameAcitvity extends AppCompatActivity {
                     countdown--;
                     pickTime.setText(""+countdown);
                     if (countdown==0){
-                        countdown = 15;
-                        pickTimer.cancel();
+                        autoPickHero();
                     }
                 }
             });
         }
     };
+
+    private void autoPickHero(){
+
+        countdown = 10;
+
+        JSONObject pickJson = new JSONObject();
+        try {
+            pickJson.put("typeK", "选择完毕");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (whosName.equals(userName)) {
+
+            if (onlyWolfOr){
+                if (userNumber==0){
+                    Random random = new Random();
+                    int ranNumber = random.nextInt(startwolfNumber);
+                    try {
+                        pickJson.put("messageK", wolfList.get(ranNumber));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    gameSocket.gameMsgToServer(pickJson.toString());
+                } else if(userNumber==1){
+                    Random random = new Random();
+                    int ranNumber = random.nextInt(startwolfNumber);
+                    try {
+                        pickJson.put("messageK", wolfList.get(ranNumber));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    gameSocket.gameMsgToServer(pickJson.toString());
+                }
+
+                    onlyWolfOr = onlyWolf(1);
+
+                pickConfirm.setVisibility(View.INVISIBLE);
+                pickConfirm.setEnabled(false);
+            }else {
+                Random random = new Random();
+                int ranNumber = random.nextInt(startHeroNumber);
+                try {
+                    pickJson.put("messageK", heroNumber.get(ranNumber));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                gameSocket.gameMsgToServer(pickJson.toString());
+
+                pickConfirm.setVisibility(View.INVISIBLE);
+                pickConfirm.setEnabled(false);
+            }
+        }
+
+        pickTimer.cancel();
+    }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
