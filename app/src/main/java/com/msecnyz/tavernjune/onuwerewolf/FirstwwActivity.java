@@ -133,6 +133,15 @@ public class FirstwwActivity extends AppCompatActivity {
             }
             if (whitch == 2){
                 Toast.makeText(FirstwwActivity.this,"匹配完成！",Toast.LENGTH_SHORT).show();
+
+                int aaa = 0;
+                while (aaa<12){
+                    views.get(aaa).setBackgroundColor(Color.parseColor("#FFFFFF"));
+                    aaa++;
+                }
+                teamLayout.setVisibility(View.INVISIBLE);
+                quickgame.setText("快速匹配");
+
                 cancelQuickGame(JoinIn);
                 Timer timer = new Timer();
                 TimerTask timerTask = new TimerTask() {
@@ -153,7 +162,7 @@ public class FirstwwActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                quickGame = new SocketOperation("192.168.199.48",8081);
+                quickGame = new SocketOperation(FirstwwActivity.this.getString(R.string.serverIP),8081);
                 quickGame.setLink();
                 quickGame.sendPlayerToQueue(userName,handler);
             }

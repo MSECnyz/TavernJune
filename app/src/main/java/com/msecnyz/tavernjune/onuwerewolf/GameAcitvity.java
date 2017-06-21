@@ -90,10 +90,12 @@ public class GameAcitvity extends AppCompatActivity {
     private int startwolfNumber = 3;
     private int userNumber = -1;
     private  GridView gridView;
+    private int myPosition = -1;
 
     private Handler handler = new Handler(){
         //若Activity没创建完成就收到消息会报异常
         @Override
+        @SuppressWarnings("unchecked")  //下面Object转ArraryList有风险
         public void handleMessage(Message msg) {
 
             String theMsg,heroName;
@@ -103,6 +105,7 @@ public class GameAcitvity extends AppCompatActivity {
                 pickWindow();
                 pickOrNot = PICKING;
                 playerList = (ArrayList<String>) msg.obj;
+                myPosition = playerList.indexOf(userName);
                 Iterator iterator = playerList.iterator();
                 int j = 0;
                 while (iterator.hasNext()){
@@ -209,8 +212,43 @@ public class GameAcitvity extends AppCompatActivity {
                 exit.setText(centerCard3);
 
                 AlertDialog.Builder dialog = new AlertDialog.Builder(GameAcitvity.this);
+                ImageView heroImage = new ImageView(GameAcitvity.this);
+                switch (myCard){
+                    case "狼Alpha":
+                        heroImage.setImageResource(R.drawable.ulw_alphawolf);
+                        myCard = "Alpha狼";
+                        break;
+                    case "狼人":
+                        heroImage.setImageResource(R.drawable.ulw_werewolf);
+                        break;
+                    case "狼先知":
+                        heroImage.setImageResource(R.drawable.ulw_mysticwolf);
+                        break;
+                    case "幽灵":
+                        heroImage.setImageResource(R.drawable.ulw_doppelganger);
+                        break;
+                    case "失眠者":
+                        heroImage.setImageResource(R.drawable.ulw_insomniac);
+                        break;
+                    case "皮匠":
+                        heroImage.setImageResource(R.drawable.ulw_minion);
+                        break;
+                    case "强盗":
+                        heroImage.setImageResource(R.drawable.ulw_robber);
+                        break;
+                    case "预言家":
+                        heroImage.setImageResource(R.drawable.ulw_seer);
+                        break;
+                    case "捣蛋鬼":
+                        heroImage.setImageResource(R.drawable.ulw_troublemaker);
+                        break;
+                    case "女巫":
+                        heroImage.setImageResource(R.drawable.ulw_witch);
+                        break;
+                }
                 dialog.setTitle("你的角色是");
                 dialog.setMessage(myCard);
+                dialog.setView(heroImage);
                 dialog.setCancelable(true);
                 dialog.setPositiveButton("好的", new DialogInterface.OnClickListener() {
                     @Override
@@ -220,8 +258,30 @@ public class GameAcitvity extends AppCompatActivity {
                 });
 
                 dialog.show();
+                pickOrNot = NO_NEED_PICK;
+            }else if (pickOrNot == NO_NEED_PICK) {
+                theMsg = (String) msg.obj;
+                String msgType = null;
+                String serverMsg=null;
+                String thisUserName = null;
+                try {
+                    JSONObject serverJson = new JSONObject(theMsg);
+                    msgType = serverJson.getString("typeK");
+                    serverMsg = serverJson.getString("messageK");
+                    thisUserName = serverJson.getString("overK");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                if (msgType.equals("文字聊天")){
 
+                    GameMsg abchatMsg = new GameMsg(thisUserName+": "+serverMsg,GameMsg.TYPE_RECEIVE);
+                    msgList.add(abchatMsg);
+                    adapter.notifyItemInserted(msgList.size() - 1);//当有新消息时刷新显示
+                    msgRecyclerView.scrollToPosition(msgList.size() - 1);//翻到最后一行
+                }
             }
+
+
         }
     };
 
@@ -262,7 +322,7 @@ public class GameAcitvity extends AppCompatActivity {
                 @Override
                 public void run() {
                     pickOrNot = NEED_PICK;
-                    gameSocket = new SocketOperation("192.168.199.48",10082);
+                    gameSocket = new SocketOperation(GameAcitvity.this.getString(R.string.serverIP),10082);
                     gameSocket.setLink(handler);
                     JSONObject firstJson = new JSONObject();
                     try {
@@ -409,11 +469,11 @@ public class GameAcitvity extends AppCompatActivity {
     }
 
     private void initMsg(){
-        GameMsg msg1 = new GameMsg("Hello World.",GameMsg.TYPE_SYSTEM);
+        GameMsg msg1 = new GameMsg("游戏日志: 游戏即将开始",GameMsg.TYPE_SYSTEM);
         msgList.add(msg1);
-        GameMsg msg2 = new GameMsg("And?",GameMsg.TYPE_RECEIVE);
+        GameMsg msg2 = new GameMsg("狼预言: And?",GameMsg.TYPE_RECEIVE);
         msgList.add(msg2);
-        GameMsg msg3 = new GameMsg("Come on!",GameMsg.TYPE_SENT);
+        GameMsg msg3 = new GameMsg("我: Come on!",GameMsg.TYPE_SENT);
         msgList.add(msg3);
     }
 
@@ -446,7 +506,17 @@ public class GameAcitvity extends AppCompatActivity {
             public void onClick(View v) {
                 String content = abcText.getText().toString();
                 if (!"".equals(content)){
-                    GameMsg msg = new GameMsg(content,GameMsg.TYPE_SENT);
+                    JSONObject chatJson = new JSONObject();
+                    try {
+                        chatJson.put("typeK","文字聊天");
+                        chatJson.put("messageK",content);
+                        chatJson.put("overK",userName);
+                        chatJson.put("positionK",myPosition);
+                        gameSocket.gameMsgToServer(chatJson.toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    GameMsg msg = new GameMsg("我: "+content,GameMsg.TYPE_SENT);
                     msgList.add(msg);
                     adapter.notifyItemInserted(msgList.size() - 1);//当有新消息时刷新显示
                     msgRecyclerView.scrollToPosition(msgList.size() - 1);//翻到最后一行
@@ -752,6 +822,10 @@ public class GameAcitvity extends AppCompatActivity {
     private void autoPickHero(){
 
         countdown = 10;
+
+        leftLL.setVisibility(View.VISIBLE);
+        rightLL.setVisibility(View.VISIBLE);
+        backLL.setBackgroundResource(0);
 
         JSONObject pickJson = new JSONObject();
         try {

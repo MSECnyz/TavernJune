@@ -11,14 +11,6 @@
         android:gravity="left">
 
         <TextView
-            android:id="@+id/whochat"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:textColor="#13227A"
-            android:text="playerX :"/>
-
-        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/left_wolfmsg"
@@ -38,32 +30,19 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:textColor="#D81E06"
-            android:text="游戏日志 :"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:id="@+id/sys_wolfmsg"
             android:layout_gravity="center"
             android:layout_margin="5dp"
             android:textColor="#D81E06"/>
 
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/right_wolflayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="left">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:textColor="#2C2C2C"
-            android:text="我 :"/>
 
         <TextView
             android:layout_width="wrap_content"

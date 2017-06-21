@@ -57,6 +57,8 @@ public class FirstActivity extends AppCompatActivity {
         autoLogIn = (CheckBox)findViewById(R.id.autologin);
         rememberUser = (CheckBox)findViewById(R.id.rememberUser);
 
+        rememberUser.setChecked(true);
+
         userId.setText(sharedPreferences.getString("userId",""));
         password.setText(sharedPreferences.getString("password",""));
 

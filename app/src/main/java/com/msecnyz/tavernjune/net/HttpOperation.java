@@ -12,7 +12,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 
 public class HttpOperation {
-    final static protected String myURL = "http://192.168.199.48:8080/TavernJune/servlet/qqServlet?";
+    final static protected String myURL = "http://192.168.199.49:8080/TavernJune/servlet/qqServlet?";
 
     private  HttpURLConnection connection;
     private DataOutputStream sendInformation;
