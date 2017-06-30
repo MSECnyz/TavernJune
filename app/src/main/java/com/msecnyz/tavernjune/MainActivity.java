@@ -31,7 +31,6 @@ public class MainActivity extends AppCompatActivity{
 
     public static MainActivity killmyself;
     static boolean touchBack = false;
-    private CoordinatorLayout coordinatorLayout;
     private Toolbar mainBar;
     private BottomNavigationBar bottomNavigationBar;
     private ViewPager viewPager;
@@ -57,36 +56,34 @@ public class MainActivity extends AppCompatActivity{
             SplashActivity.killMyself.finish();
         }
 
-        coordinatorLayout = (CoordinatorLayout)findViewById(R.id.main_coordinator);
-
-        mainBar = (Toolbar)findViewById(R.id.mainbar);
-        mainBar.inflateMenu(R.menu.mainmenu);
-        mainBar.setTitle(R.string.app_name);
-        mainBar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()){
-                    case R.id.roll20:
-                        Random random = new Random();
-                        int fate = random.nextInt(20)+1;//0（包括）-20（不包括）之前取伪随机
-                        Snackbar.make(coordinatorLayout,String.valueOf(fate),Snackbar.LENGTH_SHORT) //getWindow().getDecorView()获得最最外层的View
-                                .setAction("ReRoll", new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        Random random = new Random();
-                                        int fate = random.nextInt(21);
-                                        Toast.makeText(MainActivity.this,String.valueOf(fate),Toast.LENGTH_SHORT).show();
-                                    }
-                                }).show();
-                        break;
-                    case R.id.menusearch:
-                        Toast.makeText(MainActivity.this, "其实暂时并不能搜索任何", Toast.LENGTH_SHORT).show();
-                        break;
-                    default:break;
-                }
-                return true;
-            }
-        });
+//        mainBar = (Toolbar)findViewById(R.id.mainbar);
+//        mainBar.inflateMenu(R.menu.mainmenu);
+//        mainBar.setTitle(R.string.app_name);
+//        mainBar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+//            @Override
+//            public boolean onMenuItemClick(MenuItem item) {
+//                switch (item.getItemId()){
+//                    case R.id.roll20:
+//                        Random random = new Random();
+//                        int fate = random.nextInt(20)+1;//0（包括）-20（不包括）之前取伪随机
+//                        Snackbar.make(coordinatorLayout,String.valueOf(fate),Snackbar.LENGTH_SHORT) //getWindow().getDecorView()获得最最外层的View
+//                                .setAction("ReRoll", new View.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(View v) {
+//                                        Random random = new Random();
+//                                        int fate = random.nextInt(21);
+//                                        Toast.makeText(MainActivity.this,String.valueOf(fate),Toast.LENGTH_SHORT).show();
+//                                    }
+//                                }).show();
+//                        break;
+//                    case R.id.menusearch:
+//                        Toast.makeText(MainActivity.this, "其实暂时并不能搜索任何", Toast.LENGTH_SHORT).show();
+//                        break;
+//                    default:break;
+//                }
+//                return true;
+//            }
+//        });
 
         fragmentManager = this.getSupportFragmentManager();
         fragments.add(friendsFragment);
