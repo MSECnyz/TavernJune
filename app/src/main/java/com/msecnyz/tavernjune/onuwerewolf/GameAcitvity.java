@@ -3,6 +3,7 @@ package com.msecnyz.tavernjune.onuwerewolf;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -70,7 +71,7 @@ public class GameAcitvity extends AppCompatActivity {
     private JSONObject playerJson = null;
     private RecyclerView msgRecyclerView;
     private GameMsgAdapter adapter;
-    private SocketOperation gameSocket;
+    private SocketOperation gameSocket = null;
     private String userName,heroName;
     private String whosName = "#p$l%a&y^e$r";
     private boolean beSelected = false;
@@ -92,6 +93,8 @@ public class GameAcitvity extends AppCompatActivity {
     private  GridView gridView;
     private int myPosition = -1;
 
+
+//    ######################AsyncTask?
     private Handler handler = new Handler(){
         //若Activity没创建完成就收到消息会报异常
         @Override
@@ -512,7 +515,9 @@ public class GameAcitvity extends AppCompatActivity {
                         chatJson.put("messageK",content);
                         chatJson.put("overK",userName);
                         chatJson.put("positionK",myPosition);
-                        gameSocket.gameMsgToServer(chatJson.toString());
+                        if (gameSocket!=null) {
+                            gameSocket.gameMsgToServer(chatJson.toString());
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

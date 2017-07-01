@@ -1,8 +1,12 @@
 package com.msecnyz.tavernjune;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -30,6 +34,9 @@ public class FirstActivity extends AppCompatActivity {
     private TextView myResponse;
     private CheckBox autoLogIn,rememberUser;
     private SharedPreferences sharedPreferences = null;
+    private IntentFilter intentFilter;
+    private NetworkChangeReceiver networkChangeReceiver;
+    private boolean hasNet = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +68,14 @@ public class FirstActivity extends AppCompatActivity {
 
         userId.setText(sharedPreferences.getString("userId",""));
         password.setText(sharedPreferences.getString("password",""));
+
+        /*
+        *网络变化广播
+        */
+        intentFilter = new IntentFilter();
+        intentFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        networkChangeReceiver = new NetworkChangeReceiver();
+        registerReceiver(networkChangeReceiver,intentFilter);
 
         userId.addTextChangedListener(new TextWatcher() {
             @Override
@@ -108,10 +123,14 @@ public class FirstActivity extends AppCompatActivity {
         register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (userIdLayout.isErrorEnabled()||passwordLayout.isErrorEnabled()){
-                    Toast.makeText(FirstActivity.this,"用户名/密码格式错误",Toast.LENGTH_SHORT).show();
+                if (hasNet) {
+                    if (userIdLayout.isErrorEnabled() || passwordLayout.isErrorEnabled()) {
+                        Toast.makeText(FirstActivity.this, "用户名/密码格式错误", Toast.LENGTH_SHORT).show();
+                    } else {
+                        sendSomethingToServer("1");
+                    }
                 }else {
-                    sendSomethingToServer("1");
+                    Toast.makeText(FirstActivity.this,"请离线进入或连接网络",Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -119,10 +138,14 @@ public class FirstActivity extends AppCompatActivity {
         logIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (userIdLayout.isErrorEnabled()||passwordLayout.isErrorEnabled()){
-                    Toast.makeText(FirstActivity.this,"用户名/密码格式错误",Toast.LENGTH_SHORT).show();
+                if (hasNet) {
+                    if (userIdLayout.isErrorEnabled() || passwordLayout.isErrorEnabled()) {
+                        Toast.makeText(FirstActivity.this, "用户名/密码格式错误", Toast.LENGTH_SHORT).show();
+                    } else {
+                        sendSomethingToServer("2");
+                    }
                 }else {
-                    sendSomethingToServer("2");
+                    Toast.makeText(FirstActivity.this,"请离线进入或连接网络",Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -187,6 +210,7 @@ public class FirstActivity extends AppCompatActivity {
                     showResponse(response);
                 } catch (IOException e) {
                     e.printStackTrace();
+                    showResponse("链接失败");
                 }finally {
                     try {
                         httpOperation.closeAll();
@@ -197,6 +221,29 @@ public class FirstActivity extends AppCompatActivity {
                 }
             }
         }).start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //动态注册的广播接收器需要取消注册
+        unregisterReceiver(networkChangeReceiver);
+    }
+
+    class NetworkChangeReceiver extends BroadcastReceiver{
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            if (networkInfo!=null&&networkInfo.isAvailable()){
+                //Toast.makeText(context,"network isAvailable",Toast.LENGTH_SHORT).show();
+                hasNet = true;
+            }else {
+                //Toast.makeText(context,"network unAvailable",Toast.LENGTH_SHORT).show();
+                hasNet = false;
+            }
+
+        }
     }
 
 }

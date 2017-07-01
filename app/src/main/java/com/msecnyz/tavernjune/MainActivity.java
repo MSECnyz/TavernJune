@@ -3,18 +3,12 @@ package com.msecnyz.tavernjune;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
-import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
@@ -25,13 +19,11 @@ import com.msecnyz.tavernjune.mainfragment.UserFragment;
 import com.msecnyz.tavernjune.mainfragment.WorldFragment;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 public class MainActivity extends AppCompatActivity{
 
     public static MainActivity killmyself;
     static boolean touchBack = false;
-    private Toolbar mainBar;
     private BottomNavigationBar bottomNavigationBar;
     private ViewPager viewPager;
     private Fragment friendsFragment = new FriendsFragment();
@@ -56,35 +48,6 @@ public class MainActivity extends AppCompatActivity{
             SplashActivity.killMyself.finish();
         }
 
-//        mainBar = (Toolbar)findViewById(R.id.mainbar);
-//        mainBar.inflateMenu(R.menu.mainmenu);
-//        mainBar.setTitle(R.string.app_name);
-//        mainBar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-//            @Override
-//            public boolean onMenuItemClick(MenuItem item) {
-//                switch (item.getItemId()){
-//                    case R.id.roll20:
-//                        Random random = new Random();
-//                        int fate = random.nextInt(20)+1;//0（包括）-20（不包括）之前取伪随机
-//                        Snackbar.make(coordinatorLayout,String.valueOf(fate),Snackbar.LENGTH_SHORT) //getWindow().getDecorView()获得最最外层的View
-//                                .setAction("ReRoll", new View.OnClickListener() {
-//                                    @Override
-//                                    public void onClick(View v) {
-//                                        Random random = new Random();
-//                                        int fate = random.nextInt(21);
-//                                        Toast.makeText(MainActivity.this,String.valueOf(fate),Toast.LENGTH_SHORT).show();
-//                                    }
-//                                }).show();
-//                        break;
-//                    case R.id.menusearch:
-//                        Toast.makeText(MainActivity.this, "其实暂时并不能搜索任何", Toast.LENGTH_SHORT).show();
-//                        break;
-//                    default:break;
-//                }
-//                return true;
-//            }
-//        });
-
         fragmentManager = this.getSupportFragmentManager();
         fragments.add(friendsFragment);
         fragments.add(worldFragment);
@@ -93,7 +56,7 @@ public class MainActivity extends AppCompatActivity{
         FragAdapter fragAdapter = new FragAdapter(fragmentManager,fragments);
 
         viewPager = (ViewPager)findViewById(R.id.main_viewpager);
-        //viewPager.setOffscreenPageLimit(2);//缓存两个
+        //viewPager.setOffscreenPageLimit(X);//缓存X个
         viewPager.setAdapter(fragAdapter);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -106,12 +69,18 @@ public class MainActivity extends AppCompatActivity{
                         break;
                     case 1:
                         bottomNavigationBar.selectTab(1);
+                        if (bottomNavigationBar.isHidden()){
+                            bottomNavigationBar.show(true);
+                        }
                         break;
                     case 2:
                         bottomNavigationBar.selectTab(2);
                         break;
                     case 3:
                         bottomNavigationBar.selectTab(3);
+                        if (bottomNavigationBar.isHidden()){
+                            bottomNavigationBar.show(true);
+                        }
                         break;
                     default:
                         break;
