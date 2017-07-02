@@ -231,6 +231,7 @@ public class FirstActivity extends AppCompatActivity {
     }
 
     class NetworkChangeReceiver extends BroadcastReceiver{
+        //防止ANR不要耗时过长操作
         @Override
         public void onReceive(Context context, Intent intent) {
             ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
