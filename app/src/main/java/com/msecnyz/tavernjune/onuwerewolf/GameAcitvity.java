@@ -60,7 +60,7 @@ public class GameAcitvity extends AppCompatActivity {
             pickHero10,pickHero11,pickHero12;
     private Button abChat,abSend,abCancel,audioChat,exit,pickConfirm;
     private TextView bpMsg,playername1,playername2,playername3,playername4,playername5,playername6,
-            playername7,playername8,playername9,playername10,playername11,playername12,pickTime;
+            playername7,playername8,playername9,playername10,playername11,playername12,pickTime,windowGameMsg;
     private EditText abcText;
     private List<GameMsg> msgList = new ArrayList<>();
     private List<TextView> playerNameList = new ArrayList<>();
@@ -74,6 +74,7 @@ public class GameAcitvity extends AppCompatActivity {
     private SocketOperation gameSocket = null;
     private String userName,heroName;
     private String whosName = "#p$l%a&y^e$r";
+    private String whichHero = null;
     private boolean beSelected = false;
     private boolean onlyWolfOr=false;
     private PopupWindow pickWindow;
@@ -82,6 +83,7 @@ public class GameAcitvity extends AppCompatActivity {
     final private static int NEED_PICK = 1;
     final private static int PICKING = 2;
     final private static int PICKOVER = 3;
+    final private static String CANCELWINDOW = "cancel";
     private static int pickOrNot = -1;
     private LinearLayout leftLL,rightLL,backLL,playerLLL1,playerLLL2,playerLLL3,playerLLL4,playerLLL5,
             playerLLL6,playerLLL7,playerLLL8, playerLLL9,playerLLL10,playerLLL11,playerLLL12;
@@ -94,7 +96,7 @@ public class GameAcitvity extends AppCompatActivity {
     private int myPosition = -1;
 
 
-//    ######################AsyncTask?
+//    ######################AsyncTask?刷新动态更新的时候用吧
     private Handler handler = new Handler(){
         //若Activity没创建完成就收到消息会报异常
         @Override
@@ -206,13 +208,14 @@ public class GameAcitvity extends AppCompatActivity {
                     centerCard2 = playerJson.getString("pubHero2K");
                     centerCard3 = playerJson.getString("pubHero3K");
                     myCard = playerJson.getString("playerHeroK");
+                    whichHero = myCard;
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
-                abChat.setText(centerCard1);
-                audioChat.setText(centerCard2);
-                exit.setText(centerCard3);
+//                abChat.setText(centerCard1);
+//                audioChat.setText(centerCard2);
+//                exit.setText(centerCard3);
 
                 AlertDialog.Builder dialog = new AlertDialog.Builder(GameAcitvity.this);
                 ImageView heroImage = new ImageView(GameAcitvity.this);
@@ -262,6 +265,7 @@ public class GameAcitvity extends AppCompatActivity {
 
                 dialog.show();
                 pickOrNot = NO_NEED_PICK;
+                backLL.setClickable(false);
             }else if (pickOrNot == NO_NEED_PICK) {
                 theMsg = (String) msg.obj;
                 String msgType = null;
@@ -281,6 +285,14 @@ public class GameAcitvity extends AppCompatActivity {
                     msgList.add(abchatMsg);
                     adapter.notifyItemInserted(msgList.size() - 1);//当有新消息时刷新显示
                     msgRecyclerView.scrollToPosition(msgList.size() - 1);//翻到最后一行
+                }else if (msgType.equals("英雄顺序")){
+                    if (serverMsg.equals(whichHero)){
+                        backLL.setVisibility(View.VISIBLE);
+                        gameMsgWindow(CANCELWINDOW);
+                    }else {
+                        backLL.setVisibility(View.INVISIBLE);
+                        gameMsgWindow(serverMsg+"正在进行回合");
+                    }
                 }
             }
 
@@ -444,7 +456,6 @@ public class GameAcitvity extends AppCompatActivity {
         audioChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
             }
         });
         exit.setOnClickListener(new View.OnClickListener() {
@@ -535,6 +546,25 @@ public class GameAcitvity extends AppCompatActivity {
                 chatWindow.dismiss();
             }
         });
+
+    }
+
+    private void gameMsgWindow(String msg){
+        final PopupWindow gameMsgWindow = new PopupWindow(this);
+        View view = LayoutInflater.from(this).inflate(R.layout.onuwolf_gamemsgwindow,null);
+        gameMsgWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
+        gameMsgWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+        gameMsgWindow.setContentView(view);
+        ColorDrawable cw = new ColorDrawable(Color.parseColor("#FA000000"));
+        gameMsgWindow.setBackgroundDrawable(cw);
+        gameMsgWindow.setFocusable(false);//使按外部不取消
+        gameMsgWindow.showAtLocation(backLL, Gravity.CENTER,0,0);
+        windowGameMsg = (TextView)view.findViewById(R.id.game_msg_window);
+        if (msg.equals(CANCELWINDOW)){
+            gameMsgWindow.dismiss();
+        }else {
+            windowGameMsg.setText(msg);
+        }
 
     }
 

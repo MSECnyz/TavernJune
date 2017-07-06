@@ -12,6 +12,7 @@
     <string name="预言家">预言家</string>
     <string name="捣蛋鬼">捣蛋鬼</string>
     <string name="女巫">女巫</string>
-    <string name="serverIP">192.168.199.49</string>
+    <string name="serverIP">192.168.199.48</string>
+    <!--Socket的IP这里改，HTTP在net包Http操作类单独改 -->
 
 </resources>

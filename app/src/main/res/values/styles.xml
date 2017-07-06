@@ -14,6 +14,10 @@
         <!-- <item name="android:windowIsTranslucent">true</item> --> <!-- 透明背景,不需要了 -->
     </style>
 
+    <style name="GameTheme" parent="AppTheme">
+        <item name="android:windowBackground">@drawable/ulw_gamebackg</item>
+    </style>
+
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 

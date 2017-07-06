@@ -32,7 +32,8 @@
         <activity android:name=".onuwerewolf.FirstwwActivity"
             android:screenOrientation="landscape"/>
         <activity android:name=".onuwerewolf.GameAcitvity"
-            android:screenOrientation="landscape"/>
+            android:screenOrientation="landscape"
+            android:theme="@style/GameTheme"/>
         <activity android:name=".legionsupport.PortraitActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar"/>
