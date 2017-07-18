@@ -100,202 +100,16 @@ public class GameAcitvity extends AppCompatActivity {
     private Handler handler = new Handler(){
         //若Activity没创建完成就收到消息会报异常
         @Override
-        @SuppressWarnings("unchecked")  //下面Object转ArraryList有风险
         public void handleMessage(Message msg) {
-
-            String theMsg,heroName;
-            int chooseType;
-
             if (pickOrNot == NEED_PICK){
-                pickWindow();
-                pickOrNot = PICKING;
-                playerList = (ArrayList<String>) msg.obj;
-                myPosition = playerList.indexOf(userName);
-                Iterator iterator = playerList.iterator();
-                int j = 0;
-                while (iterator.hasNext()){
-                    String thisName = (String) iterator.next();
-                    playerNameList.get(j).setText(thisName);
-                    j++;
-                }
-                for (int i=playerList.size();i<12;i++){
-                    playerLocationList.get(i).setVisibility(View.GONE);
-                }
+                startPickHero(msg);
             }else if (pickOrNot == PICKING){
-                theMsg = (String)msg.obj;
-                try {
-                    playerJson = new JSONObject(theMsg);
-                    whosName = playerJson.getString("typeK");
-                    heroName = playerJson.getString("messageK");
-                    userNumber = playerJson.getInt("overK");
-                    chooseType= playerJson.getInt("chooseTypeK");
-                    if (whosName.equals(userName)){
-                        beSelected = false;
-                        if (userNumber==0){
-                            onlyWolfOr=onlyWolf(0);
-                        }else if (userNumber==1){
-                            onlyWolfOr=onlyWolf(0);
-                        }
-                        pickConfirm.setEnabled(true);
-                        pickConfirm.setVisibility(View.VISIBLE);
-                    }
-                    if (chooseType==0) {
-                        String first = whosName + "正在选择角色";
-                        bpMsg.setText(first);
-                    }else if (chooseType==1){
-                        String second = whosName + "正在进行额外选择";
-                        bpMsg.setText(second);
-                    }
-
-                    heroBeSelected(heroName,userNumber);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                if (pickTimer!=null){
-                    countdown = 10;
-                    pickTimer.cancel();
-                    pickTimer = new Timer();
-                    pickTimerTask = new TimerTask() {
-                        @Override
-                        public void run() {
-                            //回到UI线程更新倒计时
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    countdown--;
-                                    pickTime.setText(String.valueOf(countdown));
-                                    if (countdown==0){
-                                        autoPickHero();
-                                    }
-                                }
-                            });
-                        }
-                    };
-                    pickTimer.schedule(pickTimerTask, 1000, 1000);
-                }else {
-                        pickTimer = new Timer();
-                        pickTimer.schedule(pickTimerTask, 1000, 1000);
-                }
-
-                if(whosName.equals("选择结束")){
-                    pickOrNot = PICKOVER;
-                    pickTimer.cancel();
-                    Timer blink = new Timer();
-                    TimerTask blinkTask = new TimerTask() {
-                        @Override
-                        public void run() {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    pickWindow.dismiss();
-                                }
-                            });
-                        }
-                    };
-                    blink.schedule(blinkTask,3000);
-                }
+                heroBeSelected(msg);
             }else if (pickOrNot == PICKOVER){
-                String myCard = "天神";
-                String centerCard1 = "1";
-                String centerCard2 = "2";
-                String centerCard3 = "3";
-                theMsg = (String)msg.obj;
-                try {
-                    playerJson = new JSONObject(theMsg);
-                    centerCard1 = playerJson.getString("pubHero1K");
-                    centerCard2 = playerJson.getString("pubHero2K");
-                    centerCard3 = playerJson.getString("pubHero3K");
-                    myCard = playerJson.getString("playerHeroK");
-                    whichHero = myCard;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-//                abChat.setText(centerCard1);
-//                audioChat.setText(centerCard2);
-//                exit.setText(centerCard3);
-
-                AlertDialog.Builder dialog = new AlertDialog.Builder(GameAcitvity.this);
-                ImageView heroImage = new ImageView(GameAcitvity.this);
-                switch (myCard){
-                    case "狼Alpha":
-                        heroImage.setImageResource(R.drawable.ulw_alphawolf);
-                        myCard = "Alpha狼";
-                        break;
-                    case "狼人":
-                        heroImage.setImageResource(R.drawable.ulw_werewolf);
-                        break;
-                    case "狼先知":
-                        heroImage.setImageResource(R.drawable.ulw_mysticwolf);
-                        break;
-                    case "幽灵":
-                        heroImage.setImageResource(R.drawable.ulw_doppelganger);
-                        break;
-                    case "失眠者":
-                        heroImage.setImageResource(R.drawable.ulw_insomniac);
-                        break;
-                    case "皮匠":
-                        heroImage.setImageResource(R.drawable.ulw_minion);
-                        break;
-                    case "强盗":
-                        heroImage.setImageResource(R.drawable.ulw_robber);
-                        break;
-                    case "预言家":
-                        heroImage.setImageResource(R.drawable.ulw_seer);
-                        break;
-                    case "捣蛋鬼":
-                        heroImage.setImageResource(R.drawable.ulw_troublemaker);
-                        break;
-                    case "女巫":
-                        heroImage.setImageResource(R.drawable.ulw_witch);
-                        break;
-                }
-                dialog.setTitle("你的角色是");
-                dialog.setMessage(myCard);
-                dialog.setView(heroImage);
-                dialog.setCancelable(true);
-                dialog.setPositiveButton("好的", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-
-                dialog.show();
-                pickOrNot = NO_NEED_PICK;
-                backLL.setClickable(false);
+                myHero(msg);
             }else if (pickOrNot == NO_NEED_PICK) {
-                theMsg = (String) msg.obj;
-                String msgType = null;
-                String serverMsg=null;
-                String thisUserName = null;
-                try {
-                    JSONObject serverJson = new JSONObject(theMsg);
-                    msgType = serverJson.getString("typeK");
-                    serverMsg = serverJson.getString("messageK");
-                    thisUserName = serverJson.getString("overK");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                if (msgType.equals("文字聊天")){
-
-                    GameMsg abchatMsg = new GameMsg(thisUserName+": "+serverMsg,GameMsg.TYPE_RECEIVE);
-                    msgList.add(abchatMsg);
-                    adapter.notifyItemInserted(msgList.size() - 1);//当有新消息时刷新显示
-                    msgRecyclerView.scrollToPosition(msgList.size() - 1);//翻到最后一行
-                }else if (msgType.equals("英雄顺序")){
-                    if (serverMsg.equals(whichHero)){
-                        backLL.setVisibility(View.VISIBLE);
-                        gameMsgWindow(CANCELWINDOW);
-                    }else {
-                        backLL.setVisibility(View.INVISIBLE);
-                        gameMsgWindow(serverMsg+"正在进行回合");
-                    }
-                }
+                nowLetsDoSTH(msg);
             }
-
 
         }
     };
@@ -854,6 +668,206 @@ public class GameAcitvity extends AppCompatActivity {
         }
     };
 
+    @SuppressWarnings("unchecked")  //下面Object转ArraryList有风险
+    private void startPickHero(Message msg){
+        pickWindow();
+        pickOrNot = PICKING;
+        playerList = (ArrayList<String>) msg.obj;
+        myPosition = playerList.indexOf(userName);
+        Iterator iterator = playerList.iterator();
+        int j = 0;
+        while (iterator.hasNext()){
+            String thisName = (String) iterator.next();
+            playerNameList.get(j).setText(thisName);
+            j++;
+        }
+        for (int i=playerList.size();i<12;i++){
+            playerLocationList.get(i).setVisibility(View.GONE);
+        }
+    }
+
+    private void heroBeSelected(Message msg){
+        String selHeroName,theMsg;
+        int chooseType;
+        theMsg = (String)msg.obj;
+        try {
+            playerJson = new JSONObject(theMsg);
+            whosName = playerJson.getString("typeK");
+            selHeroName = playerJson.getString("messageK");
+            userNumber = playerJson.getInt("overK");
+            chooseType= playerJson.getInt("chooseTypeK");
+            if (whosName.equals(userName)){
+                beSelected = false;
+                if (userNumber==0){
+                    onlyWolfOr=onlyWolf(0);
+                }else if (userNumber==1){
+                    onlyWolfOr=onlyWolf(0);
+                }
+                pickConfirm.setEnabled(true);
+                pickConfirm.setVisibility(View.VISIBLE);
+            }
+            if (chooseType==0) {
+                String first = whosName + "正在选择角色";
+                bpMsg.setText(first);
+            }else if (chooseType==1){
+                String second = whosName + "正在进行额外选择";
+                bpMsg.setText(second);
+            }
+
+            heroBeSelected(selHeroName,userNumber);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (pickTimer!=null){
+            countdown = 10;
+            pickTimer.cancel();
+            pickTimer = new Timer();
+            pickTimerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    //回到UI线程更新倒计时
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            countdown--;
+                            pickTime.setText(String.valueOf(countdown));
+                            if (countdown==0){
+                                autoPickHero();
+                            }
+                        }
+                    });
+                }
+            };
+            pickTimer.schedule(pickTimerTask, 1000, 1000);
+        }else {
+            pickTimer = new Timer();
+            pickTimer.schedule(pickTimerTask, 1000, 1000);
+        }
+
+        if(whosName.equals("选择结束")){
+            pickOrNot = PICKOVER;
+            pickTimer.cancel();
+            Timer blink = new Timer();
+            TimerTask blinkTask = new TimerTask() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            pickWindow.dismiss();
+                        }
+                    });
+                }
+            };
+            blink.schedule(blinkTask,3000);
+        }
+    }
+
+    private void myHero(Message msg){
+        String myCard = "天神";
+        String centerCard1 = "1";
+        String centerCard2 = "2";
+        String centerCard3 = "3";
+        String theMsg;
+        theMsg = (String)msg.obj;
+        try {
+            playerJson = new JSONObject(theMsg);
+            centerCard1 = playerJson.getString("pubHero1K");
+            centerCard2 = playerJson.getString("pubHero2K");
+            centerCard3 = playerJson.getString("pubHero3K");
+            myCard = playerJson.getString("playerHeroK");
+            whichHero = myCard;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+//                abChat.setText(centerCard1);
+//                audioChat.setText(centerCard2);
+//                exit.setText(centerCard3);
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(GameAcitvity.this);
+        ImageView heroImage = new ImageView(GameAcitvity.this);
+        switch (myCard){
+            case "狼Alpha":
+                heroImage.setImageResource(R.drawable.ulw_alphawolf);
+                myCard = "Alpha狼";
+                break;
+            case "狼人":
+                heroImage.setImageResource(R.drawable.ulw_werewolf);
+                break;
+            case "狼先知":
+                heroImage.setImageResource(R.drawable.ulw_mysticwolf);
+                break;
+            case "幽灵":
+                heroImage.setImageResource(R.drawable.ulw_doppelganger);
+                break;
+            case "失眠者":
+                heroImage.setImageResource(R.drawable.ulw_insomniac);
+                break;
+            case "皮匠":
+                heroImage.setImageResource(R.drawable.ulw_minion);
+                break;
+            case "强盗":
+                heroImage.setImageResource(R.drawable.ulw_robber);
+                break;
+            case "预言家":
+                heroImage.setImageResource(R.drawable.ulw_seer);
+                break;
+            case "捣蛋鬼":
+                heroImage.setImageResource(R.drawable.ulw_troublemaker);
+                break;
+            case "女巫":
+                heroImage.setImageResource(R.drawable.ulw_witch);
+                break;
+        }
+        dialog.setTitle("你的角色是");
+        dialog.setMessage(myCard);
+        dialog.setView(heroImage);
+        dialog.setCancelable(true);
+        dialog.setPositiveButton("好的", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+        pickOrNot = NO_NEED_PICK;
+        backLL.setClickable(false);
+    }
+
+    private void nowLetsDoSTH(Message msg){
+        String theMsg = (String) msg.obj;
+        String msgType = null;
+        String serverMsg=null;
+        String thisUserName = null;
+        try {
+            JSONObject serverJson = new JSONObject(theMsg);
+            msgType = serverJson.getString("typeK");
+            serverMsg = serverJson.getString("messageK");
+            thisUserName = serverJson.getString("overK");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        if (msgType.equals("文字聊天")){
+
+            GameMsg abchatMsg = new GameMsg(thisUserName+": "+serverMsg,GameMsg.TYPE_RECEIVE);
+            msgList.add(abchatMsg);
+            adapter.notifyItemInserted(msgList.size() - 1);//当有新消息时刷新显示
+            msgRecyclerView.scrollToPosition(msgList.size() - 1);//翻到最后一行
+        }else if (msgType.equals("英雄顺序")){
+            if (serverMsg.equals(whichHero)){
+                backLL.setVisibility(View.VISIBLE);
+                gameMsgWindow(CANCELWINDOW);
+            }else {
+                backLL.setVisibility(View.INVISIBLE);
+                gameMsgWindow(serverMsg+"正在进行回合");
+            }
+        }
+    }
+
     private void autoPickHero(){
 
         countdown = 10;
@@ -914,6 +928,8 @@ public class GameAcitvity extends AppCompatActivity {
 
         pickTimer.cancel();
     }
+
+
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
