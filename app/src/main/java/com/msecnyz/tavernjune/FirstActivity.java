@@ -24,7 +24,7 @@ import com.msecnyz.tavernjune.net.HttpOperation;
 
 import java.io.IOException;
 
-public class FirstActivity extends AppCompatActivity {
+public class FirstActivity extends BaseActivity {
 
     public static FirstActivity killMyself;
 

@@ -34,6 +34,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import com.msecnyz.tavernjune.BaseActivity;
 import com.msecnyz.tavernjune.R;
 import com.msecnyz.tavernjune.listitem.GameMsgAdapter;
 import com.msecnyz.tavernjune.listitem.ImageTextItem;
@@ -52,7 +53,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class GameAcitvity extends AppCompatActivity {
+public class GameAcitvity extends BaseActivity {
 
     private ImageView firstSelect,secondSelect,player1,player2,player3,player4,player5,player6,player7,
             player8,player9,player10,player11,player12,centercard1,centercard2,centercard3,pickHero1,
@@ -861,6 +862,7 @@ public class GameAcitvity extends AppCompatActivity {
             if (serverMsg.equals(whichHero)){
                 backLL.setVisibility(View.VISIBLE);
                 gameMsgWindow(CANCELWINDOW);
+                doIDO(whichHero);
             }else {
                 backLL.setVisibility(View.INVISIBLE);
                 gameMsgWindow(serverMsg+"正在进行回合");
@@ -927,6 +929,71 @@ public class GameAcitvity extends AppCompatActivity {
         }
 
         pickTimer.cancel();
+    }
+
+    private void doIDO(String myhero){
+        /*
+        * 好，让我们分析一波
+        * 点击事件大体分为三种
+        * 1.点击一张卡背，然后弹出这张牌的正面   2.点击一张牌，与下一张点击的牌交换。 3.前面两种的混合模式
+        * 综上首先要有一个可根据传角色参数变化而变更view可点与否的方法。
+        * */
+        switch (myhero){
+            case "狼Alpha":
+        /*
+        * Alpha狼的操作是中央三牌默认被选中，然后点选一位玩家卡牌、点确定进行交换，包括接下来的狼人操作
+        * */
+                break;
+            case "狼人":
+        /*
+        * 狼人只需要在睁眼回合对所有初始为狼的玩家做标记
+        * */
+                break;
+            case "狼先知":
+        /*
+        * 除了狼的回合外，还要可1类型点击所有玩家牌，但不能点击中央牌堆与自己
+        * */
+                break;
+            case "幽灵":
+        /*
+        * 回合开始时刻点击玩家牌变身，之后进行相应操作，不能点击自己
+        * */
+                break;
+            case "失眠者":
+        /*
+        * 最后一回合不需点击，显示自己最终身份
+        * */
+                break;
+            case "皮匠":
+        /*
+        * 无操作，胜利条件不同
+        * */
+                break;
+            case "强盗":
+        /*
+        * 首先点击玩家牌进行1操作、之后点击另一个玩家牌进行2操作，不能点击自己
+        * */
+                break;
+            case "预言家":
+        /*
+        * 点击除自己外所有牌进行1操作
+        * */
+                break;
+            case "捣蛋鬼":
+        /*
+        * 除自己外玩家牌2操作
+        * */
+                break;
+            case "女巫":
+        /*
+        * 中央牌堆1操作、然后包括自己玩家牌2操作
+        * */
+                break;
+        }
+    }
+
+    private void startCardMove(String role){
+
     }
 
 

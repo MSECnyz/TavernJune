@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.msecnyz.tavernjune.BaseActivity;
 import com.msecnyz.tavernjune.FirstActivity;
 import com.msecnyz.tavernjune.MainActivity;
 import com.msecnyz.tavernjune.R;
@@ -27,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class FirstwwActivity extends AppCompatActivity {
+public class FirstwwActivity extends BaseActivity {
 
     public String returnMsg,userName;
     private TextView userId;

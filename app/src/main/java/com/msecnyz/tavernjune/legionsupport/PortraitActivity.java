@@ -13,13 +13,14 @@ import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 
+import com.msecnyz.tavernjune.BaseActivity;
 import com.msecnyz.tavernjune.MainActivity;
 import com.msecnyz.tavernjune.R;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 
-public class PortraitActivity extends AppCompatActivity {
+public class PortraitActivity extends BaseActivity {
 
     ImageView imageView;
     private Uri imageUri;

@@ -20,7 +20,7 @@ import com.msecnyz.tavernjune.mainfragment.WorldFragment;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends BaseActivity{
 
     public static MainActivity killmyself;
     static boolean touchBack = false;
