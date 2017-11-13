@@ -49,6 +49,10 @@
                 android:resource="@xml/file_paths"/>
         </provider>
 
+        <service android:name=".FirstService">
+        </service>
+        <service android:name=".onuwerewolf.GameService">
+        </service>
     </application>
 
 </manifest>

@@ -1,22 +1,23 @@
 package com.msecnyz.tavernjune.onuwerewolf;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -33,14 +34,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.msecnyz.tavernjune.BaseActivity;
 import com.msecnyz.tavernjune.R;
 import com.msecnyz.tavernjune.listitem.GameMsgAdapter;
 import com.msecnyz.tavernjune.listitem.ImageTextItem;
 import com.msecnyz.tavernjune.listitem.UWolfHeroAdapter;
-import com.msecnyz.tavernjune.net.HttpOperation;
-import com.msecnyz.tavernjune.net.SocketOperation;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,6 +55,8 @@ import java.util.TimerTask;
 
 public class GameAcitvity extends BaseActivity {
 
+    final private String TAG = "GameActivity";
+
     private ImageView firstSelect,secondSelect,player1,player2,player3,player4,player5,player6,player7,
             player8,player9,player10,player11,player12,centercard1,centercard2,centercard3,pickHero1,
             pickHero2,pickHero3,pickHero4,pickHero5,pickHero6,pickHero7,pickHero8,pickHero9,
@@ -62,39 +64,43 @@ public class GameAcitvity extends BaseActivity {
     private Button abChat,abSend,abCancel,audioChat,exit,pickConfirm;
     private TextView bpMsg,playername1,playername2,playername3,playername4,playername5,playername6,
             playername7,playername8,playername9,playername10,playername11,playername12,pickTime,windowGameMsg;
+    private LinearLayout leftLL,rightLL,backLL,playerLLL1,playerLLL2,playerLLL3,playerLLL4,playerLLL5,
+            playerLLL6,playerLLL7,playerLLL8, playerLLL9,playerLLL10,playerLLL11,playerLLL12;
+    private RecyclerView msgRecyclerView;
     private EditText abcText;
+    private PopupWindow pickWindow;
     private List<GameMsg> msgList = new ArrayList<>();
     private List<TextView> playerNameList = new ArrayList<>();
     private List<LinearLayout> playerLocationList = new ArrayList<>();
     private List<ImageTextItem> heroList = new ArrayList<>();
     private ArrayList<String> playerList = null;
     private ArrayList<ImageView> selectedList = new ArrayList<>();
-    private JSONObject playerJson = null;
-    private RecyclerView msgRecyclerView;
+    private ArrayList<String> heroNumber = new ArrayList<>();
+    private ArrayList<String> wolfList = new ArrayList<>();
+    private JSONObject gameJson = null;
     private GameMsgAdapter adapter;
-    private SocketOperation gameSocket = null;
-    private String userName,heroName;
+    private String userName,pickHeroName;
     private String whosName = "#p$l%a&y^e$r";
-    private String whichHero = null;
+    private String whichHeroMine = null;
+    final private String gameStateMsg1 = "#安#排#完#毕";
+    final private String gameStateMsg2 = "#选#择#完#毕";
+    final private String gameStateMsg3 = "#文#字#聊#天";
+    final private String gameStateMsg4 = "#离#开#游#戏";
+    final private static String CANCELWINDOW = "cancel";
     private boolean beSelected = false;
-    private boolean onlyWolfOr=false;
-    private PopupWindow pickWindow;
+    private boolean onlyWolfOr = false;
     private int countdown = 10;
     final private static int NO_NEED_PICK = 0;
     final private static int NEED_PICK = 1;
     final private static int PICKING = 2;
     final private static int PICKOVER = 3;
-    final private static String CANCELWINDOW = "cancel";
     private static int pickOrNot = -1;
-    private LinearLayout leftLL,rightLL,backLL,playerLLL1,playerLLL2,playerLLL3,playerLLL4,playerLLL5,
-            playerLLL6,playerLLL7,playerLLL8, playerLLL9,playerLLL10,playerLLL11,playerLLL12;
-    private ArrayList<String> heroNumber = new ArrayList<>();
-    private ArrayList<String> wolfList = new ArrayList<>();
     private int startHeroNumber = 10;
     private int startwolfNumber = 3;
     private int userNumber = -1;
-    private  GridView gridView;
     private int myPosition = -1;
+    private  GridView gridView;
+    private GameService.GameBinder myBinder;
 
 
 //    ######################AsyncTask?刷新动态更新的时候用吧
@@ -111,27 +117,20 @@ public class GameAcitvity extends BaseActivity {
             }else if (pickOrNot == NO_NEED_PICK) {
                 nowLetsDoSTH(msg);
             }
-
         }
     };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        int flag = WindowManager.LayoutParams.FLAG_FULLSCREEN;
-        getWindow().setFlags(flag,flag);
-        setContentView(R.layout.onuwolf_game);
 
         leftLL = (LinearLayout) findViewById(R.id.leftLL);
         rightLL = (LinearLayout)findViewById(R.id.rightLL);
         backLL = (LinearLayout)findViewById(R.id.backLL);
 
-        SharedPreferences sharedPreferences = this.getSharedPreferences("userIdInformation", Context.MODE_PRIVATE);
-        userName = sharedPreferences.getString("userId","userId");
 
         Intent intentall = getIntent();
 
-        initView();
         initMsg();
         msgRecyclerView = (RecyclerView)findViewById(R.id.game_msg_recyclerview);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -148,22 +147,10 @@ public class GameAcitvity extends BaseActivity {
 
         if (intentall.getStringExtra("extraData").equals("quickGame")) {
             //可以考虑等activity创建完毕再发讯息
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    pickOrNot = NEED_PICK;
-                    gameSocket = new SocketOperation(GameAcitvity.this.getString(R.string.serverIP),10082);
-                    gameSocket.setLink(handler);
-                    JSONObject firstJson = new JSONObject();
-                    try {
-                        firstJson.put("typeK","发送用户");
-                        firstJson.put("messageK",userName);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    gameSocket.gameMsgToServer(firstJson.toString());
-                }
-            }).start();
+            Intent serviceIntent = new Intent(this, GameService.class);
+            bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE);
+
+            pickOrNot = NEED_PICK;
         }else {
             leftLL.setVisibility(View.VISIBLE);
             rightLL.setVisibility(View.VISIBLE);
@@ -173,8 +160,26 @@ public class GameAcitvity extends BaseActivity {
 
     }
 
-    private void initView(){
+    @Override
+    protected void setView() {
+        super.setView();
+        int flag = WindowManager.LayoutParams.FLAG_FULLSCREEN;
+        getWindow().setFlags(flag,flag);
+        setContentView(R.layout.onuwolf_game);
 
+    }
+
+    @Override
+    protected void activityReady() {
+        super.activityReady();
+
+        SharedPreferences sharedPreferences = this.getSharedPreferences("userIdInformation", Context.MODE_PRIVATE);
+        userName = sharedPreferences.getString("userId","userId");
+    }
+
+    @Override
+    protected void initViews() {
+        super.initViews();
         abChat = (Button)findViewById(R.id.abchat);
         audioChat = (Button)findViewById(R.id.audiochat);
         exit = (Button)findViewById(R.id.wolfgame_exit);
@@ -245,23 +250,11 @@ public class GameAcitvity extends BaseActivity {
         playerNameList.add(playername11);
         playername12 = (TextView)findViewById(R.id.player_name12);
         playerNameList.add(playername12);
+    }
 
-        player1.setOnClickListener(clickMove);
-        player2.setOnClickListener(clickMove);
-        player3.setOnClickListener(clickMove);
-        player4.setOnClickListener(clickMove);
-        player5.setOnClickListener(clickMove);
-        player6.setOnClickListener(clickMove);
-        player7.setOnClickListener(clickMove);
-        player8.setOnClickListener(clickMove);
-        player9.setOnClickListener(clickMove);
-        player10.setOnClickListener(clickMove);
-        player11.setOnClickListener(clickMove);
-        player12.setOnClickListener(clickMove);
-        centercard1.setOnClickListener(clickMove);
-        centercard2.setOnClickListener(clickMove);
-        centercard3.setOnClickListener(clickMove);
-
+    @Override
+    protected void setListener() {
+        super.setListener();
         abChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -271,6 +264,43 @@ public class GameAcitvity extends BaseActivity {
         audioChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (audioChat.getText().equals("确认")){
+                    switch (whichHeroMine){
+                        case "狼Alpha":
+                            exchangeCard(firstSelect,centercard1);
+                            break;
+                        case "狼人":
+
+                            break;
+                        case "狼先知":
+
+                            break;
+                        case "幽灵":
+
+                            break;
+                        case "失眠者":
+
+                            break;
+                        case "皮匠":
+
+                            break;
+                        case "强盗":
+
+                            break;
+                        case "预言家":
+
+                            break;
+                        case "捣蛋鬼":
+
+                            break;
+                        case "女巫":
+
+                            break;
+                    }
+                    abChat.setText("按住讲话");
+                }else {
+
+                }
             }
         });
         exit.setOnClickListener(new View.OnClickListener() {
@@ -289,6 +319,14 @@ public class GameAcitvity extends BaseActivity {
                 dialog.setNegativeButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        JSONObject exitJson = new JSONObject();
+                        try {
+                            exitJson.put("msgType", gameStateMsg4);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        myBinder.sendMsgToServer(exitJson.toString());
+                        myBinder.closeSocket();
                         GameAcitvity.this.finish();
                     }
                 });
@@ -337,13 +375,11 @@ public class GameAcitvity extends BaseActivity {
                 if (!"".equals(content)){
                     JSONObject chatJson = new JSONObject();
                     try {
-                        chatJson.put("typeK","文字聊天");
-                        chatJson.put("messageK",content);
-                        chatJson.put("overK",userName);
-                        chatJson.put("positionK",myPosition);
-                        if (gameSocket!=null) {
-                            gameSocket.gameMsgToServer(chatJson.toString());
-                        }
+                        chatJson.put("msgType",gameStateMsg3);
+                        chatJson.put("msg1",content);
+                        chatJson.put("msg2",userName);
+                        //chatJson.put("msg3",myPosition);
+                        myBinder.sendMsgToServer(chatJson.toString());
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -432,7 +468,7 @@ public class GameAcitvity extends BaseActivity {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                heroName = heroAdapter.changeSelectItem(position);
+                pickHeroName = heroAdapter.changeSelectItem(position);
                 beSelected = true;
             }
         });
@@ -447,13 +483,13 @@ public class GameAcitvity extends BaseActivity {
 
                     JSONObject pickJson = new JSONObject();
                     try {
-                        pickJson.put("typeK", "选择完毕");
-                        pickJson.put("messageK", heroName);
+                        pickJson.put("msgType", gameStateMsg2);
+                        pickJson.put("msg1",pickHeroName);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
 
-                    gameSocket.gameMsgToServer(pickJson.toString());
+                    myBinder.sendMsgToServer(pickJson.toString());
 
                     pickConfirm.setVisibility(View.INVISIBLE);
                     pickConfirm.setEnabled(false);
@@ -464,10 +500,11 @@ public class GameAcitvity extends BaseActivity {
                 if (onlyWolfOr){
                     onlyWolfOr = onlyWolf(1);
                 }
-
             }
         });
+        sendMsgToServer(gameStateMsg1,userName);
     }
+
 
     private void heroBeSelected(String heroName,int userNumber){
         switch (heroName){
@@ -573,12 +610,13 @@ public class GameAcitvity extends BaseActivity {
         return false;
     }
 
-    private void exchangeCard(){
-        firstSelect.setColorFilter(null);
+    private void exchangeCard(ImageView firstCard,ImageView secondCard){
+        firstCard.setColorFilter(null);
+        secondCard.setColorFilter(null);
         int[] locationFirst = new  int[2] ;
-        firstSelect.getLocationOnScreen(locationFirst); //获取在当前窗口内的绝对坐标
+        firstCard.getLocationOnScreen(locationFirst); //获取在当前窗口内的绝对坐标
         int[] locationSecond = new  int[2] ;
-        secondSelect.getLocationOnScreen(locationSecond);
+        secondCard.getLocationOnScreen(locationSecond);
 
         TranslateAnimation tA = new TranslateAnimation(0,locationSecond[0]-locationFirst[0],
                                                         0,locationSecond[1]-locationFirst[1]);
@@ -588,68 +626,135 @@ public class GameAcitvity extends BaseActivity {
                                                     0,locationFirst[1]-locationSecond[1]);
         tB.setDuration(390);
 
-        firstSelect.startAnimation(tA);
-        secondSelect.startAnimation(tB);
+        firstCard.startAnimation(tA);
+        secondCard.startAnimation(tB);
 
-        firstSelect = null;
-        secondSelect = null;
+        firstCard = null;
+        secondCard = null;
     }
 
     private void initList(){
-        ImageTextItem option1 = new ImageTextItem(GameAcitvity.this.getString(R.string.Alpha狼),R.drawable.ulw_alphawolf);
+        //ImageTextItem option1 = new ImageTextItem(GameAcitvity.this.getString(R.string.Alpha狼),R.drawable.ulw_alphawolf);
+        ImageTextItem option1 = new ImageTextItem(GameAcitvity.this.getString(R.string.Alpha狼),R.drawable.userid);
         heroList.add(option1);
         heroNumber.add(GameAcitvity.this.getString(R.string.Alpha狼));
         wolfList.add(GameAcitvity.this.getString(R.string.Alpha狼));
-        ImageTextItem option9 = new ImageTextItem(GameAcitvity.this.getString(R.string.狼人),R.drawable.ulw_werewolf);
+        //ImageTextItem option9 = new ImageTextItem(GameAcitvity.this.getString(R.string.狼人),R.drawable.ulw_werewolf);
+        ImageTextItem option9 = new ImageTextItem(GameAcitvity.this.getString(R.string.狼人),R.drawable.userid);
         heroList.add(option9);
         heroNumber.add(GameAcitvity.this.getString(R.string.狼人));
         wolfList.add(GameAcitvity.this.getString(R.string.狼人));
-        ImageTextItem option5 = new ImageTextItem(GameAcitvity.this.getString(R.string.狼先知),R.drawable.ulw_mysticwolf);
+//        ImageTextItem option5 = new ImageTextItem(GameAcitvity.this.getString(R.string.狼先知),R.drawable.ulw_mysticwolf);
+        ImageTextItem option5 = new ImageTextItem(GameAcitvity.this.getString(R.string.狼先知),R.drawable.userid);
         heroList.add(option5);
         heroNumber.add(GameAcitvity.this.getString(R.string.狼先知));
         wolfList.add(GameAcitvity.this.getString(R.string.狼先知));
-        ImageTextItem option2 = new ImageTextItem(GameAcitvity.this.getString(R.string.幽灵),R.drawable.ulw_doppelganger);
+//        ImageTextItem option2 = new ImageTextItem(GameAcitvity.this.getString(R.string.幽灵),R.drawable.ulw_doppelganger);
+        ImageTextItem option2 = new ImageTextItem(GameAcitvity.this.getString(R.string.幽灵),R.drawable.userid);
         heroList.add(option2);
         heroNumber.add(GameAcitvity.this.getString(R.string.幽灵));
-        ImageTextItem option3 = new ImageTextItem(GameAcitvity.this.getString(R.string.失眠者),R.drawable.ulw_insomniac);
+//        ImageTextItem option3 = new ImageTextItem(GameAcitvity.this.getString(R.string.失眠者),R.drawable.ulw_insomniac);
+        ImageTextItem option3 = new ImageTextItem(GameAcitvity.this.getString(R.string.失眠者),R.drawable.userid);
         heroList.add(option3);
         heroNumber.add(GameAcitvity.this.getString(R.string.失眠者));
-        ImageTextItem option4 = new ImageTextItem(GameAcitvity.this.getString(R.string.皮匠),R.drawable.ulw_minion);
+//        ImageTextItem option4 = new ImageTextItem(GameAcitvity.this.getString(R.string.皮匠),R.drawable.ulw_minion);
+        ImageTextItem option4 = new ImageTextItem(GameAcitvity.this.getString(R.string.皮匠),R.drawable.userid);
         heroList.add(option4);
         heroNumber.add(GameAcitvity.this.getString(R.string.皮匠));
-        ImageTextItem option6 = new ImageTextItem(GameAcitvity.this.getString(R.string.强盗),R.drawable.ulw_robber);
+//        ImageTextItem option6 = new ImageTextItem(GameAcitvity.this.getString(R.string.强盗),R.drawable.ulw_robber);
+        ImageTextItem option6 = new ImageTextItem(GameAcitvity.this.getString(R.string.强盗),R.drawable.userid);
         heroList.add(option6);
         heroNumber.add(GameAcitvity.this.getString(R.string.强盗));
-        ImageTextItem option7 = new ImageTextItem(GameAcitvity.this.getString(R.string.预言家),R.drawable.ulw_seer);
+//        ImageTextItem option7 = new ImageTextItem(GameAcitvity.this.getString(R.string.预言家),R.drawable.ulw_seer);
+        ImageTextItem option7 = new ImageTextItem(GameAcitvity.this.getString(R.string.预言家),R.drawable.userid);
         heroList.add(option7);
         heroNumber.add(GameAcitvity.this.getString(R.string.预言家));
-        ImageTextItem option8 = new ImageTextItem(GameAcitvity.this.getString(R.string.捣蛋鬼),R.drawable.ulw_troublemaker);
+//        ImageTextItem option8 = new ImageTextItem(GameAcitvity.this.getString(R.string.捣蛋鬼),R.drawable.ulw_troublemaker);
+        ImageTextItem option8 = new ImageTextItem(GameAcitvity.this.getString(R.string.捣蛋鬼),R.drawable.userid);
         heroList.add(option8);
         heroNumber.add(GameAcitvity.this.getString(R.string.捣蛋鬼));
-        ImageTextItem option10 = new ImageTextItem(GameAcitvity.this.getString(R.string.女巫),R.drawable.ulw_witch);
+//        ImageTextItem option10 = new ImageTextItem(GameAcitvity.this.getString(R.string.女巫),R.drawable.ulw_witch);
+        ImageTextItem option10 = new ImageTextItem(GameAcitvity.this.getString(R.string.女巫),R.drawable.userid);
         heroList.add(option10);
         heroNumber.add(GameAcitvity.this.getString(R.string.女巫));
     }
 
-    View.OnClickListener clickMove = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            if (firstSelect == v){
-                //点同一个取消选中
-                firstSelect.setColorFilter(null);
-                firstSelect = null;
-                return;
-            }
+    private void setCardClickListener(final String heroName){
+        View.OnClickListener clickMove = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (firstSelect == v){
+                    //点同一个取消选中
+                    firstSelect.setColorFilter(null);
+                    firstSelect = null;
+                    return;
+                }
 
-            if (firstSelect == null){
-                firstSelect = (ImageView) v;
-                firstSelect.setColorFilter(Color.parseColor("#59FF0000"));
-            }else {
-                secondSelect = (ImageView)v;
-                exchangeCard();
+//                if (firstSelect == null){
+//                    firstSelect = (ImageView) v;
+//                    firstSelect.setColorFilter(Color.parseColor("#59FF0000"));
+//                } else {
+//                    secondSelect = (ImageView)v;
+//                    exchangeCard();
+//                }
+                switch (heroName){
+                    case "狼Alpha":
+                        if (firstSelect == null){
+                            firstSelect = (ImageView) v;
+                            firstSelect.setColorFilter(Color.parseColor("#59FF0000"));
+                        }else {
+                            firstSelect.setColorFilter(null);
+                            firstSelect = (ImageView)v;
+                            firstSelect.setColorFilter(Color.parseColor("#59FF0000"));
+                        }
+                        break;
+                    case "狼人":
+
+                        break;
+                    case "狼先知":
+
+                        break;
+                    case "幽灵":
+
+                        break;
+                    case "失眠者":
+
+                        break;
+                    case "皮匠":
+
+                        break;
+                    case "强盗":
+
+                        break;
+                    case "预言家":
+
+                        break;
+                    case "捣蛋鬼":
+
+                        break;
+                    case "女巫":
+
+                        break;
+                }
             }
-        }
-    };
+        };
+
+        player1.setOnClickListener(clickMove);
+        player2.setOnClickListener(clickMove);
+        player3.setOnClickListener(clickMove);
+        player4.setOnClickListener(clickMove);
+        player5.setOnClickListener(clickMove);
+        player6.setOnClickListener(clickMove);
+        player7.setOnClickListener(clickMove);
+        player8.setOnClickListener(clickMove);
+        player9.setOnClickListener(clickMove);
+        player10.setOnClickListener(clickMove);
+        player11.setOnClickListener(clickMove);
+        player12.setOnClickListener(clickMove);
+        centercard1.setOnClickListener(clickMove);
+        centercard2.setOnClickListener(clickMove);
+        centercard3.setOnClickListener(clickMove);
+    }
 
     private Timer pickTimer = null;
     private TimerTask pickTimerTask = new TimerTask() {
@@ -671,9 +776,18 @@ public class GameAcitvity extends BaseActivity {
 
     @SuppressWarnings("unchecked")  //下面Object转ArraryList有风险
     private void startPickHero(Message msg){
+        String recive = (String)msg.obj;
         pickWindow();
         pickOrNot = PICKING;
-        playerList = (ArrayList<String>) msg.obj;
+        try {
+            gameJson = new JSONObject(recive);
+            //playerList = (ArrayList<String>) gameJson.get("msg2");
+            playerList = new ArrayList<>();
+            playerList.add(gameJson.getString("msg2"));
+            playerList.add(gameJson.getString("msg3"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         myPosition = playerList.indexOf(userName);
         Iterator iterator = playerList.iterator();
         int j = 0;
@@ -689,14 +803,20 @@ public class GameAcitvity extends BaseActivity {
 
     private void heroBeSelected(Message msg){
         String selHeroName,theMsg;
+        String msgType = null;
+
         int chooseType;
         theMsg = (String)msg.obj;
         try {
-            playerJson = new JSONObject(theMsg);
-            whosName = playerJson.getString("typeK");
-            selHeroName = playerJson.getString("messageK");
-            userNumber = playerJson.getInt("overK");
-            chooseType= playerJson.getInt("chooseTypeK");
+            gameJson = new JSONObject(theMsg);
+            msgType = gameJson.getString("msgType");
+            Log.i(TAG,msgType);
+            whosName = gameJson.getString("msg1");
+            Log.i(TAG,whosName);
+            selHeroName = gameJson.getString("msg2");
+            userNumber = gameJson.getInt("msg3");
+            Log.i(TAG,String.valueOf(userNumber));
+            chooseType= gameJson.getInt("msg4");
             if (whosName.equals(userName)){
                 beSelected = false;
                 if (userNumber==0){
@@ -747,7 +867,7 @@ public class GameAcitvity extends BaseActivity {
             pickTimer.schedule(pickTimerTask, 1000, 1000);
         }
 
-        if(whosName.equals("选择结束")){
+        if(msgType.equals("overInfo")){
             pickOrNot = PICKOVER;
             pickTimer.cancel();
             Timer blink = new Timer();
@@ -774,12 +894,12 @@ public class GameAcitvity extends BaseActivity {
         String theMsg;
         theMsg = (String)msg.obj;
         try {
-            playerJson = new JSONObject(theMsg);
-            centerCard1 = playerJson.getString("pubHero1K");
-            centerCard2 = playerJson.getString("pubHero2K");
-            centerCard3 = playerJson.getString("pubHero3K");
-            myCard = playerJson.getString("playerHeroK");
-            whichHero = myCard;
+            gameJson = new JSONObject(theMsg);
+            centerCard1 = gameJson.getString("msg2");
+            centerCard2 = gameJson.getString("msg3");
+            centerCard3 = gameJson.getString("msg4");
+            myCard = gameJson.getString("msg1");
+            whichHeroMine = myCard;
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -846,23 +966,25 @@ public class GameAcitvity extends BaseActivity {
         String thisUserName = null;
         try {
             JSONObject serverJson = new JSONObject(theMsg);
-            msgType = serverJson.getString("typeK");
-            serverMsg = serverJson.getString("messageK");
-            thisUserName = serverJson.getString("overK");
+            msgType = serverJson.getString("msgType");
+            serverMsg = serverJson.getString("msg1");
+            thisUserName = serverJson.getString("msg2");
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        if (msgType.equals("文字聊天")){
+        if (msgType.equals(gameStateMsg3)){
 
             GameMsg abchatMsg = new GameMsg(thisUserName+": "+serverMsg,GameMsg.TYPE_RECEIVE);
             msgList.add(abchatMsg);
             adapter.notifyItemInserted(msgList.size() - 1);//当有新消息时刷新显示
             msgRecyclerView.scrollToPosition(msgList.size() - 1);//翻到最后一行
         }else if (msgType.equals("英雄顺序")){
-            if (serverMsg.equals(whichHero)){
+            if (serverMsg.equals(whichHeroMine)){
                 backLL.setVisibility(View.VISIBLE);
                 gameMsgWindow(CANCELWINDOW);
-                doIDO(whichHero);
+                abChat.setText("确认");
+                //狼的睁眼阶段?
+                doIDO(whichHeroMine);
             }else {
                 backLL.setVisibility(View.INVISIBLE);
                 gameMsgWindow(serverMsg+"正在进行回合");
@@ -880,7 +1002,7 @@ public class GameAcitvity extends BaseActivity {
 
         JSONObject pickJson = new JSONObject();
         try {
-            pickJson.put("typeK", "选择完毕");
+            pickJson.put("msgType", "#选#择#完#毕");
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -892,20 +1014,20 @@ public class GameAcitvity extends BaseActivity {
                     Random random = new Random();
                     int ranNumber = random.nextInt(startwolfNumber);
                     try {
-                        pickJson.put("messageK", wolfList.get(ranNumber));
+                        pickJson.put("msg1", wolfList.get(ranNumber));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    gameSocket.gameMsgToServer(pickJson.toString());
+                    myBinder.sendMsgToServer(pickJson.toString());
                 } else if(userNumber==1){
                     Random random = new Random();
                     int ranNumber = random.nextInt(startwolfNumber);
                     try {
-                        pickJson.put("messageK", wolfList.get(ranNumber));
+                        pickJson.put("msg1", wolfList.get(ranNumber));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    gameSocket.gameMsgToServer(pickJson.toString());
+                    myBinder.sendMsgToServer(pickJson.toString());
                 }
 
                     onlyWolfOr = onlyWolf(1);
@@ -916,12 +1038,12 @@ public class GameAcitvity extends BaseActivity {
                 Random random = new Random();
                 int ranNumber = random.nextInt(startHeroNumber);
                 try {
-                    pickJson.put("messageK", heroNumber.get(ranNumber));
+                    pickJson.put("msg1", heroNumber.get(ranNumber));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
-                gameSocket.gameMsgToServer(pickJson.toString());
+                myBinder.sendMsgToServer(pickJson.toString());
 
                 pickConfirm.setVisibility(View.INVISIBLE);
                 pickConfirm.setEnabled(false);
@@ -940,19 +1062,33 @@ public class GameAcitvity extends BaseActivity {
         * */
         switch (myhero){
             case "狼Alpha":
-        /*
+         /*
         * Alpha狼的操作是中央三牌默认被选中，然后点选一位玩家卡牌、点确定进行交换，包括接下来的狼人操作
         * */
+                sendSystemMsg("欢迎醒来，Alpha狼，你现在可以选择一位玩家，将其与中央狼牌交换");
+                //card1是中央狼
+                centercard1.setColorFilter(Color.parseColor("#59FF0000"));
+                refreshClickable(true);
+                setCardClickListener("狼Alpha");
+                centercard1.setClickable(false);
+                centercard2.setClickable(false);
+                centercard3.setClickable(false);
+                sendSystemMsg("请选中想要与之交换的玩家，然后选择确认");
                 break;
             case "狼人":
-        /*
+         /*
         * 狼人只需要在睁眼回合对所有初始为狼的玩家做标记
         * */
+                sendSystemMsg("欢迎醒来，狼人，你的同类已被标记");
+
+                //此处还需要其他角色位置信息
+
                 break;
             case "狼先知":
         /*
         * 除了狼的回合外，还要可1类型点击所有玩家牌，但不能点击中央牌堆与自己
         * */
+
                 break;
             case "幽灵":
         /*
@@ -978,6 +1114,10 @@ public class GameAcitvity extends BaseActivity {
         /*
         * 点击除自己外所有牌进行1操作
         * */
+                sendSystemMsg("欢迎醒来，预言家，你现在可以检视一位玩家或中央牌的身份");
+                refreshClickable(true);
+                setCardClickListener("预言家");
+                //无法选中自己
                 break;
             case "捣蛋鬼":
         /*
@@ -992,11 +1132,84 @@ public class GameAcitvity extends BaseActivity {
         }
     }
 
+    private void sendSystemMsg(String msg){
+        GameMsg gameMsg = new GameMsg(msg,GameMsg.TYPE_SYSTEM);
+        msgList.add(gameMsg);
+        adapter.notifyItemInserted(msgList.size() - 1);//当有新消息时刷新显示
+        msgRecyclerView.scrollToPosition(msgList.size() - 1);//翻到最后一行
+    }
+
+    private void refreshClickable(boolean clickable){
+        player1.setClickable(clickable);
+        player2.setClickable(clickable);
+        player3.setClickable(clickable);
+        player4.setClickable(clickable);
+        player5.setClickable(clickable);
+        player6.setClickable(clickable);
+        player7.setClickable(clickable);
+        player8.setClickable(clickable);
+        player9.setClickable(clickable);
+        player10.setClickable(clickable);
+        player11.setClickable(clickable);
+        player12.setClickable(clickable);
+        centercard1.setClickable(clickable);
+        centercard2.setClickable(clickable);
+        centercard3.setClickable(clickable);
+}
+
     private void startCardMove(String role){
 
     }
 
+    private void sendMsgToServer(final String msgType){
+        JSONObject msgJson = new JSONObject();
+        try {
+            msgJson.put("msgType",msgType);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        myBinder.sendMsgToServer(msgJson.toString());
+    }
 
+    private void sendMsgToServer(final String msgType,final String msg1){
+        JSONObject msgJson = new JSONObject();
+        try {
+            msgJson.put("msgType",msgType);
+            msgJson.put("msg1",msg1);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        myBinder.sendMsgToServer(msgJson.toString());
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        unbindService(serviceConnection);
+        super.onDestroy();
+    }
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            myBinder = (GameService.GameBinder) service;
+            myBinder.setHandler(handler);
+
+            JSONObject firstJson = new JSONObject();
+            try {
+                firstJson.put("msgType","#准#备#就#绪");
+                firstJson.put("msg1",userName);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            myBinder.sendMsgToServer(firstJson.toString());
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {

@@ -12,7 +12,10 @@
     <string name="预言家">预言家</string>
     <string name="捣蛋鬼">捣蛋鬼</string>
     <string name="女巫">女巫</string>
-    <string name="serverIP">192.168.199.48</string>
-    <!--Socket的IP这里改，HTTP在net包Http操作类单独改 -->
+    <string name="serverIP">47.95.237.255</string>
+    <string name="heartPort">9901</string>
+    <string name="gamePort">9902</string>
+    <string name="registerHttpURL">http://47.95.237.255:8080/TavernJuneServer/user/register.action</string>
+    <string name="loginHttpURL">http://47.95.237.255:8080/TavernJuneServer/user/login.action</string>
 
 </resources>

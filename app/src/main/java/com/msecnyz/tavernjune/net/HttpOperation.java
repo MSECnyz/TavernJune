@@ -13,14 +13,17 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 
 public class HttpOperation {
-    final static protected String myURL = "http://192.168.199.48:8080/TavernJune/servlet/qqServlet?";
+    protected String myURL;
 
     private  HttpURLConnection connection;
     private DataOutputStream sendInformation;
 
 
+    public void setUrl(String url){
+        myURL = url;
+    }
 
-    public String sendUserInformation(String username,String password,String ipAdress,String msgType)throws IOException{
+    public String sendUserInformation(String username,String password)throws IOException{
         URL url = null;
         url = new URL(myURL);
         connection = (HttpURLConnection)url.openConnection();
@@ -33,7 +36,7 @@ public class HttpOperation {
             String sse = "连接超时";
             return sse;
          }
-        sendInformation.writeUTF("&username="+username+"&password="+password+"&ipAdress="+ipAdress+"&msgType="+msgType);
+        sendInformation.writeUTF("&username="+username+"&password="+password);
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream())); //服务器用的printwriter字符流
         StringBuilder response = new StringBuilder();
         String line;

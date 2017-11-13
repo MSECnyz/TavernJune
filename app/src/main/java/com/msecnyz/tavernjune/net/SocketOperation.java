@@ -18,10 +18,9 @@ public class SocketOperation {
     private int port;
 
     private Socket socket;
-    private DataOutputStream dostos;
-    private DataInputStream disfrs;
-    private ObjectInputStream oisfrs;
-    private ObjectOutputStream oostos;
+    private ObjectOutputStream oosTos;
+    private ObjectInputStream oisFrs;
+    private Handler msgHandler;
 
 
     public SocketOperation(String ipAddress,int port){
@@ -29,73 +28,45 @@ public class SocketOperation {
         this.port = port;
     }
 
-    public void setLink(){
-        try {
-            socket = new Socket(ipAddress,port);
-            dostos = new DataOutputStream(socket.getOutputStream());
-            disfrs = new DataInputStream(socket.getInputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setLink(final Handler objectHandler) {
-        try {
-            socket = new Socket(ipAddress,port);
-            oostos = new ObjectOutputStream(socket.getOutputStream());
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        oisfrs = new ObjectInputStream(socket.getInputStream());
-                        Object someObj;
-                        while ((someObj = oisfrs.readObject())!=null) {
-                            //readObject阻塞式
-                            Message message = new Message();
-                            message.obj = someObj;
-                            objectHandler.sendMessage(message);
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }catch (ClassNotFoundException e){
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void sendPlayerToQueue(String msg,Handler handler){
-
-        try {
-            String line = msg;
-            if (dostos!=null){
-                dostos.writeUTF(line);
-                dostos.flush();
-            }
-            if (disfrs!=null) {
-                String lineIn;
-                while ((lineIn = disfrs.readUTF()) != null) {
-                    Message message = new Message();
-                    message.obj = lineIn;
-                    handler.sendMessage(message);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void gameMsgToServer(final Object msg){
+    public void setServiceLink(){
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    if (oostos!=null){
-                        oostos.writeObject(msg);
-                        oostos.flush();
+                    socket = new Socket(ipAddress,port);
+                    oosTos = new ObjectOutputStream(socket.getOutputStream());
+                    oisFrs = new ObjectInputStream(socket.getInputStream());
+                    Object someObj;
+                    while ((someObj = oisFrs.readObject())!=null) {
+                        //readObject阻塞式
+                        Message message = new Message();
+                        message.obj = someObj;
+                        if (msgHandler!=null){
+                            msgHandler.sendMessage(message);
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    public void setHandler(Handler handler){
+        msgHandler = handler;
+    }
+
+
+    public void msgToServer(final Object msg){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (oosTos!=null){
+                        oosTos.writeObject(msg);
+                        oosTos.flush();
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -106,14 +77,11 @@ public class SocketOperation {
 
     public void closeAll(){
         try {
-            if (dostos!=null){
-                dostos.close();
+            if (oosTos!=null){
+                oosTos.close();
             }
-            if (disfrs!=null){
-                disfrs.close();
-            }
-            if(oisfrs!=null){
-                oisfrs.close();
+            if(oisFrs!=null){
+                oisFrs.close();
             }
             if (socket!=null){
                 socket.close();

@@ -1,18 +1,19 @@
 package com.msecnyz.tavernjune;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.IBinder;
 import android.support.design.widget.TextInputLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -20,6 +21,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.msecnyz.tavernjune.legionsupport.FirstServiceListener;
 import com.msecnyz.tavernjune.net.HttpOperation;
 
 import java.io.IOException;
@@ -43,7 +45,6 @@ public class FirstActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_first);
 
-        SplashActivity.killMyself.finish();
         killMyself = this;
 
         sharedPreferences = getSharedPreferences("userIdInformation", Context.MODE_PRIVATE);
@@ -162,6 +163,12 @@ public class FirstActivity extends BaseActivity {
 
     }
 
+    @Override
+    protected void activityReady() {
+        super.activityReady();
+        if (SplashActivity.killMyself!=null)SplashActivity.killMyself.finish();
+    }
+
     private void showResponse(final String response){
 
         //密码加密？
@@ -173,7 +180,7 @@ public class FirstActivity extends BaseActivity {
                 myResponse.setText(response);
             }
         });
-        //如果服务器返回值为登陆成功，进行跳转
+        //如果服务器返回值为登录成功，进行跳转
         if (response.equals("登录成功")){
             editor.putString("userId",userId.getText().toString());
             editor.commit();
@@ -191,11 +198,14 @@ public class FirstActivity extends BaseActivity {
                 editor.putString("autoLogIn","false");
                 editor.commit();
             }
+            //启动长连接TCP服务
+            Intent startIntent = new Intent(this, FirstService.class);
+            startService(startIntent);
+            //跳转至下个Activity
             Intent intent = new Intent();
             intent.setClass(FirstActivity.this,MainActivity.class);
             intent.putExtra("extraData","default");
             FirstActivity.this.startActivity(intent);
-
         }
     }
 
@@ -204,9 +214,14 @@ public class FirstActivity extends BaseActivity {
             @Override
             public void run() {
                 HttpOperation httpOperation = new HttpOperation();
+                if (msgType.equals("1")){
+                    httpOperation.setUrl(FirstActivity.this.getString(R.string.registerHttpURL));
+                }else{
+                    httpOperation.setUrl(FirstActivity.this.getString(R.string.loginHttpURL));
+                }
                 String response;
                 try {
-                    response = httpOperation.sendUserInformation(userId.getText().toString(),password.getText().toString(),"Nothing",msgType);
+                    response = httpOperation.sendUserInformation(userId.getText().toString(),password.getText().toString());
                     showResponse(response);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -246,5 +261,4 @@ public class FirstActivity extends BaseActivity {
 
         }
     }
-
 }

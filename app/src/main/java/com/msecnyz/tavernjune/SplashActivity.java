@@ -46,7 +46,7 @@ public class SplashActivity extends BaseActivity {
                         public void run() {
                             HttpOperation httpOperation = new HttpOperation();
                             try {
-                                String response = httpOperation.sendUserInformation(userId,password,"Nothing","2");
+                                String response = httpOperation.sendUserInformation(userId,password);
                                 if (response.equals("登录成功")){
                                     SplashActivity.this.startActivity(intentS);
                                 }else {
