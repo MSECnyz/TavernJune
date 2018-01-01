@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.msecnyz.tavernjune.R;
 
 import java.util.List;
@@ -56,11 +57,13 @@ public class UWolfHeroAdapter extends ArrayAdapter<ImageTextItem> {
             viewHolder = (ViewHolder)v.getTag();
         }
         if (mySelect==position){
-            viewHolder.imageView.setImageResource(imageTextItem.getImageId());
+            Glide.with(parent.getContext()).load(imageTextItem.getImageId()).into(viewHolder.imageView);
+            //viewHolder.imageView.setImageResource(imageTextItem.getImageId());
             viewHolder.imageView.setColorFilter(Color.parseColor("#59FF0000"));
             viewHolder.textView.setText(imageTextItem.getName());
         }else {
-            viewHolder.imageView.setImageResource(imageTextItem.getImageId());
+            Glide.with(parent.getContext()).load(imageTextItem.getImageId()).into(viewHolder.imageView);
+            //viewHolder.imageView.setImageResource(imageTextItem.getImageId());
             viewHolder.imageView.setColorFilter(Color.parseColor("#00FFFFFF"));
             viewHolder.textView.setText(imageTextItem.getName());
         }

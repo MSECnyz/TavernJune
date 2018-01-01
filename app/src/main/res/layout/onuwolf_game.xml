@@ -37,8 +37,7 @@
                     android:layout_marginLeft="10dp"
                     android:id="@+id/player1"
                     android:layout_width="80dp"
-                    android:layout_height="45dp"
-                    android:src="@drawable/userid"/>
+                    android:layout_height="45dp" />
             </LinearLayout>
             <LinearLayout
                 android:layout_width="0dp"
@@ -55,8 +54,7 @@
                 <ImageView
                     android:id="@+id/player9"
                     android:layout_width="80dp"
-                    android:layout_height="45dp"
-                    android:src="@drawable/userid"/>
+                    android:layout_height="45dp" />
             </LinearLayout>
             <LinearLayout
                 android:layout_width="0dp"
@@ -73,8 +71,7 @@
                 <ImageView
                     android:id="@+id/player2"
                     android:layout_width="80dp"
-                    android:layout_height="45dp"
-                    android:src="@drawable/userid"/>
+                    android:layout_height="45dp" />
             </LinearLayout>
             <LinearLayout
                 android:id="@+id/playerLLL7"
@@ -91,8 +88,7 @@
                 <ImageView
                     android:id="@+id/player7"
                     android:layout_width="80dp"
-                    android:layout_height="45dp"
-                    android:src="@drawable/userid"/>
+                    android:layout_height="45dp" />
             </LinearLayout>
 
         </LinearLayout>
@@ -148,15 +144,13 @@
                             android:layout_gravity="bottom"
                             android:id="@+id/centercard2"
                             android:layout_width="80dp"
-                            android:layout_height="45dp"
-                            android:src="@drawable/userid"/>
+                            android:layout_height="45dp" />
                         <ImageView
                             android:layout_marginLeft="3dp"
                             android:layout_gravity="bottom"
                             android:id="@+id/centercard3"
                             android:layout_width="80dp"
-                            android:layout_height="45dp"
-                            android:src="@drawable/userid"/>
+                            android:layout_height="45dp" />
                     </LinearLayout>
                     <LinearLayout
                         android:translationZ="2dp"
@@ -168,8 +162,7 @@
                             android:layout_marginLeft="52dp"
                             android:id="@+id/centercard1"
                             android:layout_width="80dp"
-                            android:layout_height="45dp"
-                            android:src="@drawable/userid"/>
+                            android:layout_height="45dp" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -212,8 +205,7 @@
                     android:layout_marginLeft="7dp"
                     android:id="@+id/player4"
                     android:layout_width="80dp"
-                    android:layout_height="45dp"
-                    android:src="@drawable/userid"/>
+                    android:layout_height="45dp" />
             </LinearLayout>
             <LinearLayout
                 android:id="@+id/playerLLL10"
@@ -230,8 +222,7 @@
                 <ImageView
                     android:id="@+id/player10"
                     android:layout_width="80dp"
-                    android:layout_height="45dp"
-                    android:src="@drawable/userid"/>
+                    android:layout_height="45dp" />
             </LinearLayout>
             <LinearLayout
                 android:id="@+id/playerLLL5"
@@ -248,8 +239,7 @@
                 <ImageView
                     android:id="@+id/player5"
                     android:layout_width="80dp"
-                    android:layout_height="45dp"
-                    android:src="@drawable/userid"/>
+                    android:layout_height="45dp" />
             </LinearLayout>
             <LinearLayout
                 android:id="@+id/playerLLL8"
@@ -266,8 +256,7 @@
                 <ImageView
                     android:id="@+id/player8"
                     android:layout_width="80dp"
-                    android:layout_height="45dp"
-                    android:src="@drawable/userid"/>
+                    android:layout_height="45dp" />
             </LinearLayout>
 
         </LinearLayout>
@@ -297,8 +286,7 @@
             <ImageView
                 android:id="@+id/player3"
                 android:layout_width="80dp"
-                android:layout_height="45dp"
-                android:src="@drawable/userid"/>
+                android:layout_height="45dp" />
         </LinearLayout>
         <LinearLayout
             android:id="@+id/playerLLL11"
@@ -315,8 +303,7 @@
             <ImageView
                 android:id="@+id/player11"
                 android:layout_width="80dp"
-                android:layout_height="45dp"
-                android:src="@drawable/userid"/>
+                android:layout_height="45dp" />
         </LinearLayout>
         <LinearLayout
             android:id="@+id/playerLLL12"
@@ -333,8 +320,7 @@
             <ImageView
                 android:id="@+id/player12"
                 android:layout_width="80dp"
-                android:layout_height="45dp"
-                android:src="@drawable/userid"/>
+                android:layout_height="45dp" />
         </LinearLayout>
         <LinearLayout
             android:id="@+id/playerLLL6"
@@ -351,8 +337,7 @@
             <ImageView
                 android:id="@+id/player6"
                 android:layout_width="80dp"
-                android:layout_height="45dp"
-                android:src="@drawable/userid"/>
+                android:layout_height="45dp" />
         </LinearLayout>
 
     </LinearLayout>

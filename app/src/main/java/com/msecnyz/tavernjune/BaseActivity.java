@@ -9,7 +9,7 @@ import android.support.v7.app.AppCompatActivity;
  */
 
 public class BaseActivity extends AppCompatActivity {
-    final public static boolean Debug = true;
+    //final public static boolean Debug = true;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -20,11 +20,11 @@ public class BaseActivity extends AppCompatActivity {
         setListener();
     }
 
-    protected void setView(){
+    protected void activityReady(){
 
     }
 
-    protected void activityReady(){
+    protected void setView(){
 
     }
 
