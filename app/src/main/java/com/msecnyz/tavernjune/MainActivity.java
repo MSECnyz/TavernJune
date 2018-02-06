@@ -151,6 +151,7 @@ public class MainActivity extends BaseActivity{
 
 //        Intent startIntent = new Intent(this, FirstService.class);
 //        bindService(startIntent, serviceConnection, BIND_AUTO_CREATE);
+
     }
 
     public static class FragAdapter extends FragmentPagerAdapter{

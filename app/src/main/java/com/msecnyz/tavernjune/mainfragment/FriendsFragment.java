@@ -10,10 +10,12 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.msecnyz.tavernjune.R;
+import com.msecnyz.tavernjune.legionsupport.AudioChat;
 
 import java.util.Random;
 
@@ -21,6 +23,9 @@ public class FriendsFragment extends Fragment {
 
     private Toolbar mainBar;
     private BottomNavigationBar bottomNavigationBar;
+    private Button play;
+
+    private AudioChat audioChat = new AudioChat(getActivity());
 
     @Nullable
     @Override
@@ -55,6 +60,15 @@ public class FriendsFragment extends Fragment {
                     default:break;
                 }
                 return true;
+            }
+        });
+
+        play = (Button)v.findViewById(R.id.audio_re);
+
+        play.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                audioChat.sendChatRequest();
             }
         });
 

@@ -67,10 +67,13 @@ public class GameAcitvity extends BaseActivity {
 
     //centerCard1是中央狼牌
     private Button abChat,abSend,abCancel,audioChat,exit,pickConfirm;
-    private TextView bpMsg,playername1,playername2,playername3,playername4,playername5,playername6,
-            playername7,playername8,playername9,playername10,playername11,playername12,pickTime,windowGameMsg;
+
+    private TextView bpMsg,playername1,playername2,playername3,playername4,playername5,playername6, playername7,
+            playername8,playername9,playername10,playername11,playername12,pickTime,windowGameMsg,gameStateText;
+
     private LinearLayout leftLL,rightLL,backLL,playerLLL1,playerLLL2,playerLLL3,playerLLL4,playerLLL5,
             playerLLL6,playerLLL7,playerLLL8, playerLLL9,playerLLL10,playerLLL11,playerLLL12;
+
     private RecyclerView msgRecyclerView;
     private EditText abcText;
     private PopupWindow pickWindow;
@@ -93,7 +96,7 @@ public class GameAcitvity extends BaseActivity {
     final private String gameStateMsg1 = "#安#排#完#毕";
     final private String gameStateMsg2 = "#选#择#完#毕";
     final private String gameStateMsg3 = "#文#字#聊#天";
-    final private String gameStateMsg4 = "#离#开#游#戏";
+    final private String gameStateMsg4 = "#本#局#结#束";
     final private String gameStateMsg5 = "#开#始#行#动";
     final private String gameStateMsg6 = "#进#行#回#合";
     final private String gameStateMsg7 = "#回#合#结#束";
@@ -101,6 +104,7 @@ public class GameAcitvity extends BaseActivity {
     final private String gameStateMsg9 = "#发#言#结#束";
     final private String gameStateMsg10 = "#开#始#投#票";
     final private String gameStateMsg11 = "#投#票#结#束";
+    final private String gameStateMsg12 = "overInfo";
 
     final private static String CANCELWINDOW = "cancel";
     private boolean beSelected = false;
@@ -285,6 +289,9 @@ public class GameAcitvity extends BaseActivity {
         playerNameViewList.add(playername11);
         playername12 = (TextView)findViewById(R.id.player_name12);
         playerNameViewList.add(playername12);
+
+        gameStateText = (TextView)findViewById(R.id.gameStateText);
+        gameStateText.setVisibility(View.GONE);
     }
 
     @Override
@@ -386,10 +393,17 @@ public class GameAcitvity extends BaseActivity {
                                         sendMsgToServer(gameStateMsg7,getString(R.string.女巫),positionToUser(firstSelect),positionToUser(secondSelect));
                                     }
                                 },1000);
+                                break;
+                            case "finalKill":
+                                sendMsgToServer(gameStateMsg11,positionToUser(firstSelect));
+                                sendSystemMsg("你选择了*"+positionToUser(firstSelect)+"*作为投票结果");
+                                break;
                         }
                     }else {
                         Toast.makeText(getBaseContext(),"请选择卡牌",Toast.LENGTH_SHORT).show();
                     }
+
+                    refreshClickable(false); // 顺便重置颜色
                     //audioChat.setText("按住讲话");
                 }else {
                     //audioChat.setText("确认");
@@ -870,6 +884,17 @@ public class GameAcitvity extends BaseActivity {
                             secondSelect = (ImageView)v;
                             secondSelect.setColorFilter(Color.parseColor("#59FF0000"));
                         }
+                        break;
+                    case "finalKill":
+                        if (firstSelect == null){
+                            firstSelect = (ImageView) v;
+                            firstSelect.setColorFilter(Color.parseColor("#59FF0000"));
+                        }else {
+                            firstSelect.setColorFilter(null);
+                            firstSelect = (ImageView)v;
+                            firstSelect.setColorFilter(Color.parseColor("#59FF0000"));
+                        }
+                        break;
                 }
             }
         };
@@ -891,23 +916,8 @@ public class GameAcitvity extends BaseActivity {
         centercard3.setOnClickListener(clickMove);
     }
 
-    private Timer pickTimer = null;
-    private TimerTask pickTimerTask = new TimerTask() {
-        @Override
-        public void run() {
-            //回到UI线程更新倒计时
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    countdown--;
-                    pickTime.setText(""+countdown);
-                    if (countdown==0){
-                        autoPickHero();
-                    }
-                }
-            });
-        }
-    };
+    private Timer firstTimer = null;
+    private TimerTask firstTimerTask = null;
 
     @SuppressWarnings("unchecked")  //下面Object转ArraryList有风险
     private void startPickHero(Message msg){
@@ -991,11 +1001,11 @@ public class GameAcitvity extends BaseActivity {
             e.printStackTrace();
         }
 
-        if (pickTimer!=null){
+        if (firstTimer!=null){
             countdown = 10;
-            pickTimer.cancel();
-            pickTimer = new Timer();
-            pickTimerTask = new TimerTask() {
+            firstTimer.cancel();
+            firstTimer = new Timer();
+            firstTimerTask = new TimerTask() {
                 @Override
                 public void run() {
                     //回到UI线程更新倒计时
@@ -1011,15 +1021,32 @@ public class GameAcitvity extends BaseActivity {
                     });
                 }
             };
-            pickTimer.schedule(pickTimerTask, 1000, 1000);
+            firstTimer.schedule(firstTimerTask, 1000, 1000);
         }else {
-            pickTimer = new Timer();
-            pickTimer.schedule(pickTimerTask, 1000, 1000);
+            firstTimer = new Timer();
+            countdown = 10;
+            firstTimerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    //回到UI线程更新倒计时
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            countdown--;
+                            pickTime.setText(String.valueOf(countdown));
+                            if (countdown==0){
+                                autoPickHero();
+                            }
+                        }
+                    });
+                }
+            };
+            firstTimer.schedule(firstTimerTask, 1000, 1000);
         }
 
-        if(msgType.equals("overInfo")){
+        if(msgType.equals(gameStateMsg12)){
             pickOrNot = PICKOVER;
-            pickTimer.cancel();
+            firstTimer.cancel();
             bpMsg.setText("选择完毕，正在分配卡牌");
             bpMsg.postDelayed(new Runnable() {
                 @Override
@@ -1108,9 +1135,7 @@ public class GameAcitvity extends BaseActivity {
         dialog.setTitle("你的角色是");
         dialog.setMessage(card);
         dialog.setView(heroImage);
-        //应该在此显示一下所有已选英雄
-        //TODO:应设置点外界无效
-        dialog.setCancelable(true);
+        dialog.setCancelable(false); //点击框外不会取消
         dialog.setPositiveButton("好的", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -1153,6 +1178,7 @@ public class GameAcitvity extends BaseActivity {
         return tempImage;
     }
 
+    //正式游戏阶段的流程函数
     private void nowLetsDoSTH(Message msg){
         String theMsg = (String) msg.obj;
         String msgType = null;
@@ -1185,6 +1211,7 @@ public class GameAcitvity extends BaseActivity {
                 e.printStackTrace();
             }
             if (serverMsg.equals(whichHeroMine)){
+                //TODO 捣蛋鬼为什么不行？
                 backLL.setVisibility(View.VISIBLE);
                 gameMsgWindow(CANCELWINDOW);
                 //狼的睁眼阶段?
@@ -1203,6 +1230,56 @@ public class GameAcitvity extends BaseActivity {
                 backLL.setVisibility(View.INVISIBLE);
                 gameMsgWindow(serverMsg+"正在进行回合");
             }
+        }else if (msgType.equals(gameStateMsg8)){
+            backLL.setVisibility(View.VISIBLE);
+            gameMsgWindow(CANCELWINDOW);
+            gameStateText.setVisibility(View.VISIBLE);
+//            if (serverMsg.equals(whichHeroMine)) {
+//
+//            }
+            startArgue(serverMsg);
+        }else if (msgType.equals(gameStateMsg10)){
+            if (firstTimer!=null)firstTimer.cancel();
+            gameStateText.setVisibility(View.GONE);
+
+            sendSystemMsg("你现在可以选择一位玩家的卡牌并点击确认，作为你的处决投票");
+            setCardClickListener("finalKill"); //setListener会刷新Clickable
+            centercard1.setClickable(false);
+            centercard2.setClickable(false);
+            centercard3.setClickable(false);
+
+            whichHeroMine = "finalKill"; //在此处临时替换以供点击确认时发送相应的投票结果
+        }else if (msgType.equals(gameStateMsg11)){
+            //msg2是被投最多票的list
+            Log.i(TAG,"最终字符"+serverJson.toString());
+            JSONArray resultList = null;
+            String chosenOne,chosenTwo;
+            boolean result = false;
+            try {
+                whichHeroMine = userToHero.getString(myUserName);
+                resultList = serverJson.getJSONArray("msg2");
+                //TODO:会不会三人以上同时投票而死？
+                if (resultList.length()==1){
+                    chosenOne = resultList.getString(0);
+                    result = startSettle(userToHero.getString(chosenOne),null);
+                }else if (resultList.length() == 2){
+                    chosenOne = resultList.getString(0);
+                    chosenTwo = resultList.getString(1);
+                    result = startSettle(userToHero.getString(chosenOne),userToHero.getString(chosenTwo));
+                }
+
+                if (result){
+                    sendSystemMsg("####你赢了####");
+                }else {
+                    sendSystemMsg("####你输了####");
+                }
+
+                showResultImage(resultList);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+
         }
     }
 
@@ -1261,7 +1338,7 @@ public class GameAcitvity extends BaseActivity {
                     JSONArray array = json.getJSONArray("msg3");
                     for (int i=0;i<array.length();i++){
                         String tempUser = array.getString(i);
-                        Log.i(TAG,"AAA狼群集合AAA"+tempUser);  //到这一步挂了  下面数组越界
+                        Log.i(TAG,"AAA狼群集合AAA"+tempUser);
                         secondSelect =  userToPosition(tempUser);
                         secondSelect.setColorFilter(Color.parseColor("#59FF0000"));
                     }
@@ -1274,6 +1351,7 @@ public class GameAcitvity extends BaseActivity {
                     @Override
                     public void run() {
                         sendMsgToServer(gameStateMsg7,"狼群");
+                        refreshClickable(false);//重置颜色
                     }
                 },5000);
                 break;
@@ -1293,6 +1371,12 @@ public class GameAcitvity extends BaseActivity {
                     e.printStackTrace();
                 }
                 sendSystemMsg("欢迎醒来，失眠者，你的最终角色是 ***"+hero+"***");
+                backLL.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        sendMsgToServer(gameStateMsg7,"失眠者");
+                    }
+                },2000);
                 break;
             case "皮匠":
         /*
@@ -1303,6 +1387,7 @@ public class GameAcitvity extends BaseActivity {
         /*
         * 首先点击玩家牌进行1操作、之后点击另一个玩家牌进行2操作，不能点击自己
         * */
+
                 sendSystemMsg("欢迎醒来，强盗，你现在可以查看一位玩家的卡牌，并将自己与之交换");
 
                 setCardClickListener("强盗");
@@ -1310,6 +1395,7 @@ public class GameAcitvity extends BaseActivity {
                 centercard1.setClickable(false);
                 centercard2.setClickable(false);
                 centercard3.setClickable(false);
+                userToPosition(myUserName).setClickable(false); //强盗不能点自己
                 break;
             case "预言家":
         /*
@@ -1338,22 +1424,183 @@ public class GameAcitvity extends BaseActivity {
         * 中央牌堆1操作、然后包括自己玩家牌2操作
         * */
                 sendSystemMsg("欢迎醒来，女巫，你现在可以检视一张中央卡牌，并将其与一名玩家交换，选中中央牌后按确认继续");
-
                 setCardClickListener("女巫");
-                //refreshClickable(false);
+                //屏蔽玩家牌
+                refreshClickable(false);
                 centercard1.setClickable(true);
                 centercard2.setClickable(true);
                 centercard3.setClickable(true);
                 break;
             case "女巫2":
                 sendSystemMsg("女巫，现在可将选中的中央卡牌与一名玩家交换，选中玩家牌后按确认继续");
-
                 setCardClickListener("女巫2");
-                //refreshClickable(true);
                 firstSelect.setColorFilter(Color.parseColor("#59FF0000"));
                 centercard1.setClickable(false);
                 centercard2.setClickable(false);
                 centercard3.setClickable(false);
+                break;
+        }
+    }
+
+    private void startArgue(final String playerName){
+        if (firstTimer!=null){
+            //cancel并不会等于Null
+            firstTimer.cancel();
+            countdown = 5;
+            firstTimer = new Timer();
+            firstTimerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    //回到UI线程更新倒计时
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            countdown--;
+                            gameStateText.setText(playerName+"正在发言  "+String.valueOf(countdown));
+                            if (countdown==0){
+                                Log.i(TAG,"1   "+myUserName);
+                                if (playerName.equals(myUserName))sendMsgToServer(gameStateMsg9);
+                            }
+                        }
+                    });
+                }
+            };
+            firstTimer.schedule(firstTimerTask, 1000, 1000);
+        }else {
+            firstTimer = new Timer();
+            countdown = 5;
+            firstTimerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    //回到UI线程更新倒计时
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            countdown--;
+                            gameStateText.setText(playerName+"正在发言  "+String.valueOf(countdown));
+                            if (countdown==0){
+                                Log.i(TAG,"2   "+myUserName);
+                                if (playerName.equals(myUserName))sendMsgToServer(gameStateMsg9);
+                            }
+                        }
+                    });
+                }
+            };
+            firstTimer.schedule(firstTimerTask, 1000, 1000);
+        }
+    }
+
+    private boolean startSettle(String deadHeroName1,String deadHeroName2){
+//        1如果至少一只狼人死了（即使有非狼人死了），那么村民党获胜。
+//        2如果存在狼人并且狼人都活着，那么狼人党获胜。
+//        3如果没有人是狼人，并且大家都活着，那么村民党获胜。
+//        4如果没有人是狼人，并且至少一人死了，那么共同失败。
+
+        //***目前情况下至少一人死，所以没有3情况即为只要死一个狼则村民胜，否则狼人胜
+
+        //判断死的有没有狼，判断自己是不是狼，得出自己的胜负结论。
+        if (deadHeroName2 == null){
+            //只死一人
+            //TODO 还要考虑幽灵狼的情况
+            if (deadHeroName1.equals(getString(R.string.皮匠))){
+                if (whichHeroMine.equals(getString(R.string.皮匠))){
+                    return true;
+                }else{
+                    return false;
+                }
+            }else if(deadHeroName1.contains("狼")){
+                //死的是狼
+                if (whichHeroMine.contains("狼")){
+                    //自己是狼则输了
+                    return false;
+                }else {
+                    return true;
+                }
+            }else{
+                //死的不是狼
+                if (whichHeroMine.contains("狼")){
+                    //自己是狼则赢了
+                    return true;
+                }else {
+                    return false;
+                }
+            }
+
+        }else {
+            //死两人
+            if (deadHeroName1.equals(getString(R.string.皮匠))||deadHeroName2.equals(getString(R.string.皮匠))){
+                if (whichHeroMine.equals(getString(R.string.皮匠))){
+                    return true;
+                }else{
+                    return false;
+                }
+            }else if (deadHeroName1.contains("狼")||deadHeroName2.contains("狼")){
+                //只要有一个狼死
+                if (whichHeroMine.contains("狼")){
+                    //自己是狼则输了
+                    return false;
+                }else {
+                    return true;
+                }
+            }else {
+                //两个都不是狼
+                if (whichHeroMine.contains("狼")){
+                    //自己是狼则赢了
+                    return true;
+                }else {
+                    return false;
+                }
+            }
+
+        }
+    }
+
+    private void showResultImage(JSONArray resultList)throws JSONException{
+        //resultList得是用户名
+        int playerNumber = userToHero.length();
+        for (int i=0;i<playerNumber;i++){
+            String heroName = userToHero.getString(playerNameList.get(i));
+            loadImageByHero(heroName,selectedList.get(i));
+        }
+        if (resultList.length()==1){
+            userToPosition(resultList.getString(0)).setColorFilter(Color.parseColor("#59FF0000"));
+        }else if (resultList.length()==2){
+            userToPosition(resultList.getString(0)).setColorFilter(Color.parseColor("#59FF0000"));
+            userToPosition(resultList.getString(1)).setColorFilter(Color.parseColor("#59FF0000"));
+        }
+    }
+
+    private void loadImageByHero(String heroName,ImageView image){
+        switch (heroName){
+            case "狼Alpha":
+                Glide.with(this).load(R.drawable.ulw_alphawolf).into(image);
+                break;
+            case "狼人":
+                Glide.with(this).load(R.drawable.ulw_werewolf).into(image);
+                break;
+            case "狼先知":
+                Glide.with(this).load(R.drawable.ulw_mysticwolf).into(image);
+                break;
+            case "幽灵":
+                Glide.with(this).load(R.drawable.ulw_doppelganger).into(image);
+                break;
+            case "失眠者":
+                Glide.with(this).load(R.drawable.ulw_insomniac).into(image);
+                break;
+            case "皮匠":
+                Glide.with(this).load(R.drawable.ulw_minion).into(image);
+                break;
+            case "强盗":
+                Glide.with(this).load(R.drawable.ulw_robber).into(image);
+                break;
+            case "预言家":
+                Glide.with(this).load(R.drawable.ulw_seer).into(image);
+                break;
+            case "捣蛋鬼":
+                Glide.with(this).load(R.drawable.ulw_troublemaker).into(image);
+                break;
+            case "女巫":
+                Glide.with(this).load(R.drawable.ulw_witch).into(image);
                 break;
         }
     }
@@ -1417,7 +1664,7 @@ public class GameAcitvity extends BaseActivity {
             }
         }
 
-        pickTimer.cancel();
+        firstTimer.cancel();
     }
 
     private void sendSystemMsg(String msg){
