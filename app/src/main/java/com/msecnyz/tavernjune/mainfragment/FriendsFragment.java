@@ -1,11 +1,14 @@
 package com.msecnyz.tavernjune.mainfragment;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,18 +17,22 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
+import com.msecnyz.tavernjune.MainActivity;
 import com.msecnyz.tavernjune.R;
 import com.msecnyz.tavernjune.legionsupport.AudioChat;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class FriendsFragment extends Fragment {
 
     private Toolbar mainBar;
     private BottomNavigationBar bottomNavigationBar;
-    private Button play;
 
-    private AudioChat audioChat = new AudioChat(getActivity());
+//    private Button play,room;
+//    private AudioChat audioChat;
+
 
     @Nullable
     @Override
@@ -63,14 +70,26 @@ public class FriendsFragment extends Fragment {
             }
         });
 
-        play = (Button)v.findViewById(R.id.audio_re);
-
-        play.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                audioChat.sendChatRequest();
-            }
-        });
+//        play = (Button)v.findViewById(R.id.audio_re);
+//        room = (Button)v.findViewById(R.id.audio_room);
+//
+//
+//        play.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                //这里只是发一下请求就没用了。
+//                audioChat = new AudioChat(FriendsFragment.this.getActivity(),true);
+////                audioChat.setHandler(handler);
+//
+//            }
+//        });
+//
+//        room.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                audioChat.sendRoomList();
+//            }
+//        });
 
         return v;
     }

@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.msecnyz.tavernjune.R;
@@ -67,6 +68,8 @@ public class GameListAdapter extends RecyclerView.Adapter<GameListAdapter.ViewHo
                     Intent intent = new Intent();
                     intent.setClass(mContext, FirstwwActivity.class);
                     mContext.startActivity(intent);
+                }else {
+                    Toast.makeText(mContext,"假的，都是假的",Toast.LENGTH_SHORT).show();
                 }
             }
         });

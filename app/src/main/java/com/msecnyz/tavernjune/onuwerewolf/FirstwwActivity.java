@@ -41,7 +41,7 @@ public class FirstwwActivity extends BaseActivity {
     private final  String JoinIn = "#进#入#游#戏";
     private final String exit = "#退#出#游#戏";
     private boolean intoGame;
-    private static int playerNumber = 2;
+    private static int playerNumber = 5; //参与一局游戏的人数
     private FirstService.MsgBinder myBinder;
     private GameService.GameBinder gameBinder;
     //private FirstService myService;

@@ -28,9 +28,8 @@ public class FirstService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        //sendMsg("aaa");
-        heartSocket  = new SocketOperation(FirstService.this.getString(R.string.serverIP),Integer.parseInt(FirstService.this.getString(R.string.heartPort)));
-        heartSocket.setServiceLink();
+
+        //bind会执行onCreate，避免在里面重复操作
 
     }
 
@@ -70,6 +69,11 @@ public class FirstService extends Service {
             return FirstService.this;
         }
         public void setHandler(Handler handler){heartSocket.setHandler(handler);}
+        public void startSocket(){
+            heartSocket  = new SocketOperation(FirstService.this.getString(R.string.serverIP),Integer.parseInt(FirstService.this.getString(R.string.heartPort)));
+            heartSocket.setHandler(null);
+            heartSocket.setServiceLink();
+        }
         public void sendMsgToServer(Object jsonObject){
             heartSocket.msgToServer(jsonObject);
         }

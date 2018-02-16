@@ -7,7 +7,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="COC"
-        android:textSize="50dp"/>
+        android:gravity="center"
+        android:text="与怪物搏斗的人，须留意自己也变成怪物；当你注视深渊时，深渊也在注视着你。"
+        android:textSize="20dp"/>
 
 </android.support.design.widget.CoordinatorLayout>

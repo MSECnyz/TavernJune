@@ -19,19 +19,29 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_gravity="center"-->
-        <!--android:text="玩耍"-->
-        <!--android:textSize="50dp"/>-->
-
-    <Button
-        android:id="@+id/audio_re"
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="发送语音请求"
-        android:textSize="50dp" />
+        android:gravity="center"
+        android:text="爱丽丝想也没想,紧跟着跳了进去。她没想着以后该怎么上来。"
+        android:textSize="20dp"/>
+
+    <!--<Button-->
+        <!--android:id="@+id/audio_re"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="center"-->
+        <!--android:text="发送语音请求"-->
+        <!--android:textSize="50dp" />-->
+
+    <!--<Button-->
+        <!--android:id="@+id/audio_room"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="center"-->
+        <!--android:layout_marginTop="200dp"-->
+        <!--android:text="分配房间"-->
+        <!--android:textSize="50dp" />-->
 
 </android.support.design.widget.CoordinatorLayout>

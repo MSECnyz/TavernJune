@@ -111,9 +111,9 @@ public class PlayFragment extends Fragment {
     private void initGames(){
         gameList.clear();
         gameList.add(new GameListItem("一夜终极狼人","卡牌/推理",this.getActivity().getString(R.string.ulwtips),R.drawable.ulwicon,R.drawable.ulwshow));
-        gameList.add(new GameListItem("2222222","卡牌/推理",this.getActivity().getString(R.string.ulwtips),R.drawable.ulwicon,R.drawable.ulwshow));
-        gameList.add(new GameListItem("3333333","卡牌/推理",this.getActivity().getString(R.string.ulwtips),R.drawable.ulwicon,R.drawable.ulwshow));
-        gameList.add(new GameListItem("4444444","卡牌/推理",this.getActivity().getString(R.string.ulwtips),R.drawable.ulwicon,R.drawable.ulwshow));
+        gameList.add(new GameListItem("我是大老板","卡牌/谈判",this.getActivity().getString(R.string.bbtips),R.drawable.bbicon,R.drawable.bbshow));
+        gameList.add(new GameListItem("LIFEBOAT","卡牌/谈判",this.getActivity().getString(R.string.lbtips),R.drawable.lbicon,R.drawable.lbshow));
+        gameList.add(new GameListItem("山屋惊魂","战棋/生存",this.getActivity().getString(R.string.bhtips),R.drawable.bhicon,R.drawable.bhshow));
     }
 
 }

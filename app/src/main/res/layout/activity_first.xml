@@ -11,7 +11,7 @@
     tools:context="com.msecnyz.tavernjune.FirstActivity">
 
     <TextView
-        android:text="欢迎来到六月酒馆~"
+        android:text="欢迎来到TavernJune~"
         android:textSize="30dp"
         android:textColor="#2c2c2c"
         android:layout_width="wrap_content"
@@ -22,7 +22,7 @@
         android:id="@+id/welcome" />
 
     <TextView
-        android:text="你不是这店里唯一的冒险者"
+        android:text="你不是这里唯一的冒险者"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/welcome"
@@ -120,7 +120,7 @@
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="55dp"
-        android:layout_marginLeft="5dp"
+        android:layout_marginLeft="18dp"
         android:background="@drawable/registerbutton"
         android:textColor="@color/botton_text"
         android:id="@+id/register"

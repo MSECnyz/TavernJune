@@ -39,7 +39,7 @@ public class WorldFragment extends Fragment {
         bottomNavigationBar = (BottomNavigationBar) this.getActivity().findViewById(R.id.bottom_navigation);
         mainBar = (Toolbar)v.findViewById(R.id.mainbar_world);
         mainBar.inflateMenu(R.menu.mainmenu);
-        mainBar.setTitle("巨龙或是克苏鲁");
+        mainBar.setTitle("龙与克苏鲁");
         mainBar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {

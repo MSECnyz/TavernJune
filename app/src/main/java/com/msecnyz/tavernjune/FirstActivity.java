@@ -39,6 +39,7 @@ public class FirstActivity extends BaseActivity {
     private IntentFilter intentFilter;
     private NetworkChangeReceiver networkChangeReceiver;
     private boolean hasNet = true;
+    private FirstService.MsgBinder myBinder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,10 +155,10 @@ public class FirstActivity extends BaseActivity {
         offLine.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.putExtra("extraData","default");
-                intent.setClass(FirstActivity.this,MainActivity.class);
-                FirstActivity.this.startActivity(intent);
+//                Intent intent = new Intent();
+//                intent.putExtra("extraData","default");
+//                intent.setClass(FirstActivity.this,MainActivity.class);
+//                FirstActivity.this.startActivity(intent);
             }
         });
 
@@ -201,6 +202,8 @@ public class FirstActivity extends BaseActivity {
             //启动长连接TCP服务
             Intent startIntent = new Intent(this, FirstService.class);
             startService(startIntent);
+            //绑定以手动链接socket
+            bindService(startIntent, serviceConnection, BIND_AUTO_CREATE);
             //跳转至下个Activity
             Intent intent = new Intent();
             intent.setClass(FirstActivity.this,MainActivity.class);
@@ -243,7 +246,21 @@ public class FirstActivity extends BaseActivity {
         super.onDestroy();
         //动态注册的广播接收器需要取消注册
         unregisterReceiver(networkChangeReceiver);
+        unbindService(serviceConnection);
     }
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            myBinder = (FirstService.MsgBinder)service;
+            myBinder.startSocket();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
     class NetworkChangeReceiver extends BroadcastReceiver{
         //防止ANR不要耗时过长操作

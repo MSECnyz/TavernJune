@@ -7,7 +7,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="DND"
-        android:textSize="50dp"/>
+        android:gravity="center"
+        android:text="没有人能够如此无私的深入最黑暗而危险的战场，不管你在哪里，我们都希望你一路顺风，勇敢的流浪者。"
+        android:textSize="20dp"/>
 
 </android.support.design.widget.CoordinatorLayout>

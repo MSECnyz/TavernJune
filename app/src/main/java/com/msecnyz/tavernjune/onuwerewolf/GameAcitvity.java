@@ -77,6 +77,7 @@ public class GameAcitvity extends BaseActivity {
     private RecyclerView msgRecyclerView;
     private EditText abcText;
     private PopupWindow pickWindow;
+    private  GridView gridView;
 
     //TODO:节约资源
     private List<GameMsg> msgList = null;
@@ -109,6 +110,7 @@ public class GameAcitvity extends BaseActivity {
     final private static String CANCELWINDOW = "cancel";
     private boolean beSelected = false;
     private boolean onlyWolfOr = false;
+    //private boolean ghostHeroFlag = false; //记录最初自己是不是幽灵
     private int countdown = 10;
     final private static int NO_NEED_PICK = 0;
     final private static int NEED_PICK = 1;
@@ -118,7 +120,7 @@ public class GameAcitvity extends BaseActivity {
     private int startHeroNumber = 10;
     private int startwolfNumber = 3;
     private int userNumber = -1;
-    private  GridView gridView;
+
     private GameService.GameBinder myBinder;
     private JSONObject userToHero;
     private PopupWindow lastMsgWindow; //用以解散上次的msgWindow
@@ -323,12 +325,13 @@ public class GameAcitvity extends BaseActivity {
                                 backLL.postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
-                                        sendMsgToServer(gameStateMsg7,getString(R.string.Alpha狼),positionToUser(firstSelect));
+                                        sendMsgToServer(gameStateMsg7,getString(R.string.Alpha狼),positionToUser(firstSelect),"centerCard1");
                                     }
                                 },1000);
                                 break;
                             case "狼先知":
                                 String hero =  positionToHero(firstSelect);
+                                if (hero.contains("幽灵"))hero = "幽灵";
                                 sendSystemMsg("你所查看的角色是 ***" + hero + "***");
                                 backLL.postDelayed(new Runnable() {
                                     @Override
@@ -338,13 +341,16 @@ public class GameAcitvity extends BaseActivity {
                                 },5000);
                                 break;
                             case "幽灵":
-
+                                String hero0 = positionToHero(firstSelect);
+                                sendSystemMsg("你所查看的角色是 ***" + hero0 + "***");
+                                doGhostDo(hero0);
                                 break;
                             case "失眠者":
                                 sendMsgToServer(gameStateMsg7,getString(R.string.失眠者));
                                 break;
                             case "强盗":
                                 String hero1 =  positionToHero(firstSelect);
+                                if (hero1.contains("幽灵"))hero1 = "幽灵";
                                 sendSystemMsg("你所查看的角色是 ***" + hero1 + "***");
                                 secondSelect = userToPosition(myUserName);
                                 exchangeCard(firstSelect,secondSelect);
@@ -362,6 +368,8 @@ public class GameAcitvity extends BaseActivity {
                                 }else {
                                     hero2 = positionToHero(firstSelect);
                                 }
+                                //TODO: 不能显示幽灵XXX的名字
+                                if (hero2.contains("幽灵"))hero2 = "幽灵";
                                 sendSystemMsg("你所查看的角色是 ***" + hero2 + "***");
                                 backLL.postDelayed(new Runnable() {
                                     @Override
@@ -381,6 +389,7 @@ public class GameAcitvity extends BaseActivity {
                                 break;
                             case "女巫":
                                 String hero3 =  centerCardToHero.get(firstSelect);
+                                if (hero3.contains("幽灵"))hero3 = "幽灵";
                                 sendSystemMsg("你所查看的角色是 ***" + hero3 + "***");
                                 whichHeroMine = "女巫2";
                                 doIDo("女巫2",null);
@@ -394,6 +403,76 @@ public class GameAcitvity extends BaseActivity {
                                     }
                                 },1000);
                                 break;
+                            case "幽灵Alpha狼":
+                                exchangeCard(firstSelect, centercard1);
+                                backLL.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        sendMsgToServer(gameStateMsg7,getString(R.string.幽灵),"幽灵Alpha狼",positionToUser(firstSelect),"centerCard1",myUserName);
+                                    }
+                                },1000);
+                                break;
+                            case "幽灵捣蛋鬼":
+                                exchangeCard(firstSelect,secondSelect);
+                                backLL.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        sendMsgToServer(gameStateMsg7,getString(R.string.幽灵),"幽灵捣蛋鬼",positionToUser(firstSelect),positionToUser(secondSelect),myUserName);
+                                    }
+                                },1000);
+                                break;
+                            case "幽灵女巫":
+                                String hero4 =  centerCardToHero.get(firstSelect);
+                                sendSystemMsg("你所查看的角色是 ghost***" + hero4 + "***ghost");
+                                whichHeroMine = "幽灵女巫2";
+                                doGhostDo(whichHeroMine);
+                                break;
+                            case "幽灵女巫2":
+                                exchangeCard(firstSelect,secondSelect);
+                                backLL.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        sendMsgToServer(gameStateMsg7,getString(R.string.幽灵),"幽灵女巫",positionToUser(firstSelect),positionToUser(secondSelect),myUserName);
+                                    }
+                                },1000);
+                                break;
+                            case "幽灵强盗":
+                                String hero5 =  positionToHero(firstSelect);
+                                sendSystemMsg("你所查看的角色是 ghost***" + hero5 + "***ghost");
+                                secondSelect = userToPosition(myUserName);
+                                exchangeCard(firstSelect,secondSelect);
+                                backLL.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        sendMsgToServer(gameStateMsg7,getString(R.string.幽灵),"幽灵强盗",myUserName,positionToUser(firstSelect),myUserName);
+                                    }
+                                },5000);
+                                break;
+                            case "幽灵预言家":
+                                String hero6;
+                                if (firstSelect==centercard1||firstSelect==centercard2||firstSelect==centercard3){
+                                    hero6 = centerCardToHero.get(firstSelect);
+                                }else {
+                                    hero6 = positionToHero(firstSelect);
+                                }
+                                sendSystemMsg("你所查看的角色是 ghost***" + hero6 + "***ghost");
+                                backLL.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        sendMsgToServer(gameStateMsg7,getString(R.string.幽灵),"幽灵预言家",myUserName,myUserName,myUserName);
+                                    }
+                                },5000);
+                                break;
+                            case "幽灵狼先知":
+                                String hero7 =  positionToHero(firstSelect);
+                                sendSystemMsg("你所查看的角色是 ghost***" + hero7 + "***ghost");
+                                backLL.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        sendMsgToServer(gameStateMsg7,getString(R.string.幽灵),"幽灵狼先知",myUserName,myUserName,myUserName);
+                                    }
+                                },5000);
+                                break;
                             case "finalKill":
                                 sendMsgToServer(gameStateMsg11,positionToUser(firstSelect));
                                 sendSystemMsg("你选择了*"+positionToUser(firstSelect)+"*作为投票结果");
@@ -403,7 +482,7 @@ public class GameAcitvity extends BaseActivity {
                         Toast.makeText(getBaseContext(),"请选择卡牌",Toast.LENGTH_SHORT).show();
                     }
 
-                    refreshClickable(false); // 顺便重置颜色
+                    refreshCardColor(); // 顺便重置颜色
                     //audioChat.setText("按住讲话");
                 }else {
                     //audioChat.setText("确认");
@@ -788,6 +867,7 @@ public class GameAcitvity extends BaseActivity {
         View.OnClickListener clickMove = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.w(TAG,"触发卡牌点击");
                 if (firstSelect == v){
                     //点同一个取消选中
                     firstSelect.setColorFilter(null);
@@ -829,7 +909,14 @@ public class GameAcitvity extends BaseActivity {
                         }
                         break;
                     case "幽灵":
-
+                        if (firstSelect == null){
+                            firstSelect = (ImageView) v;
+                            firstSelect.setColorFilter(Color.parseColor("#59FF0000"));
+                        }else {
+                            firstSelect.setColorFilter(null);
+                            firstSelect = (ImageView)v;
+                            firstSelect.setColorFilter(Color.parseColor("#59FF0000"));
+                        }
                         break;
                     case "失眠者":
 
@@ -863,6 +950,7 @@ public class GameAcitvity extends BaseActivity {
                             firstSelect.setColorFilter(Color.parseColor("#59FF0000"));
                         } else {
                             secondSelect = (ImageView)v;
+                            secondSelect.setColorFilter(Color.parseColor("#59FF0000"));
                         }
                         break;
                     case "女巫":
@@ -1210,14 +1298,14 @@ public class GameAcitvity extends BaseActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+
             if (serverMsg.equals(whichHeroMine)){
-                //TODO 捣蛋鬼为什么不行？
                 backLL.setVisibility(View.VISIBLE);
                 gameMsgWindow(CANCELWINDOW);
                 //狼的睁眼阶段?
                 doIDo(whichHeroMine,serverJson);
             }else if (serverMsg.equals("狼群")){
-                if (whichHeroMine.equals("狼Alpha")||whichHeroMine.equals("狼人")||whichHeroMine.equals("狼先知")){
+                if (whichHeroMine.contains("狼")){
                     backLL.setVisibility(View.VISIBLE);
                     gameMsgWindow(CANCELWINDOW);
                     //狼的睁眼阶段?
@@ -1262,10 +1350,12 @@ public class GameAcitvity extends BaseActivity {
                 if (resultList.length()==1){
                     chosenOne = resultList.getString(0);
                     result = startSettle(userToHero.getString(chosenOne),null);
+                    sendSystemMsg(resultList.getString(0)+"被投票处决");
                 }else if (resultList.length() == 2){
                     chosenOne = resultList.getString(0);
                     chosenTwo = resultList.getString(1);
                     result = startSettle(userToHero.getString(chosenOne),userToHero.getString(chosenTwo));
+                    sendSystemMsg(resultList.getString(0)+"和"+resultList.getString(1)+"被投票处决");
                 }
 
                 if (result){
@@ -1300,7 +1390,6 @@ public class GameAcitvity extends BaseActivity {
                 sendSystemMsg("欢迎醒来，Alpha狼，你现在可以选择一位玩家，将其与中央狼牌交换");
                 //card1是中央狼
                 setCardClickListener("狼Alpha"); //setListener会刷新Clickable
-                //refreshClickable(true);
                 centercard1.setClickable(false);
                 centercard2.setClickable(false);
                 centercard3.setClickable(false);
@@ -1323,7 +1412,6 @@ public class GameAcitvity extends BaseActivity {
                 sendSystemMsg("欢迎醒来，狼先知，你现在可以查看任意一位玩家的卡牌");
 
                 setCardClickListener("狼先知");
-                //refreshClickable(true);
                 centercard1.setClickable(false);
                 centercard2.setClickable(false);
                 centercard3.setClickable(false);
@@ -1333,12 +1421,14 @@ public class GameAcitvity extends BaseActivity {
                 if (secondSelect==null){
                     sendSystemMsg("欢迎醒来，狼人，认识一下的的同类吧，要做个自我介绍吗？(5秒后游戏继续)");
                     refreshClickable(false);
+                    refreshCardColor();
                 }
                 try {
                     JSONArray array = json.getJSONArray("msg3");
                     for (int i=0;i<array.length();i++){
                         String tempUser = array.getString(i);
                         Log.i(TAG,"AAA狼群集合AAA"+tempUser);
+                        //  TODO 需要服务器返回包括幽灵狼的用户名
                         secondSelect =  userToPosition(tempUser);
                         secondSelect.setColorFilter(Color.parseColor("#59FF0000"));
                     }
@@ -1352,6 +1442,7 @@ public class GameAcitvity extends BaseActivity {
                     public void run() {
                         sendMsgToServer(gameStateMsg7,"狼群");
                         refreshClickable(false);//重置颜色
+                        refreshCardColor();
                     }
                 },5000);
                 break;
@@ -1359,6 +1450,12 @@ public class GameAcitvity extends BaseActivity {
         /*
         * 回合开始时刻点击玩家牌变身，之后进行相应操作，不能点击自己
         * */
+                sendSystemMsg("欢迎醒来，幽灵，你现在可以选择一位玩家并变为对方的身份（选择一个玩家卡牌后点击确认）");
+                setCardClickListener("幽灵");
+                centercard1.setClickable(false);
+                centercard2.setClickable(false);
+                centercard3.setClickable(false);
+                userToPosition(myUserName).setClickable(false); //幽灵不能变自己
                 break;
             case "失眠者":
         /*
@@ -1370,6 +1467,8 @@ public class GameAcitvity extends BaseActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
+                if (hero.contains("幽灵"))hero = "幽灵";
                 sendSystemMsg("欢迎醒来，失眠者，你的最终角色是 ***"+hero+"***");
                 backLL.postDelayed(new Runnable() {
                     @Override
@@ -1391,7 +1490,6 @@ public class GameAcitvity extends BaseActivity {
                 sendSystemMsg("欢迎醒来，强盗，你现在可以查看一位玩家的卡牌，并将自己与之交换");
 
                 setCardClickListener("强盗");
-                //refreshClickable(true);
                 centercard1.setClickable(false);
                 centercard2.setClickable(false);
                 centercard3.setClickable(false);
@@ -1402,9 +1500,7 @@ public class GameAcitvity extends BaseActivity {
         * 点击除自己外所有牌进行1操作
         * */
                 sendSystemMsg("欢迎醒来，预言家，你现在可以检视一位玩家或中央牌的身份");
-
                 setCardClickListener("预言家");
-                //refreshClickable(true);
                 //无法选中自己
                 break;
             case "捣蛋鬼":
@@ -1414,7 +1510,6 @@ public class GameAcitvity extends BaseActivity {
                 sendSystemMsg("欢迎醒来，捣蛋鬼，你现在可以交换任意两名玩家的卡牌，选中后按确认继续");
 
                 setCardClickListener("捣蛋鬼");
-                //refreshClickable(true);
                 centercard1.setClickable(false);
                 centercard2.setClickable(false);
                 centercard3.setClickable(false);
@@ -1427,12 +1522,90 @@ public class GameAcitvity extends BaseActivity {
                 setCardClickListener("女巫");
                 //屏蔽玩家牌
                 refreshClickable(false);
+                refreshCardColor();
                 centercard1.setClickable(true);
                 centercard2.setClickable(true);
                 centercard3.setClickable(true);
                 break;
             case "女巫2":
                 sendSystemMsg("女巫，现在可将选中的中央卡牌与一名玩家交换，选中玩家牌后按确认继续");
+                setCardClickListener("女巫2");
+                firstSelect.setColorFilter(Color.parseColor("#59FF0000"));
+                centercard1.setClickable(false);
+                centercard2.setClickable(false);
+                centercard3.setClickable(false);
+                break;
+        }
+    }
+
+    private void doGhostDo(String hero0){
+        switch (hero0){
+            case "狼Alpha":
+                sendSystemMsg("你化身为了Alpha狼，你现在可以选择一位玩家，将其与中央狼牌交换");
+                setCardClickListener("狼Alpha"); //setListener会刷新Clickable
+                centercard1.setClickable(false);
+                centercard2.setClickable(false);
+                centercard3.setClickable(false);
+                centercard1.setColorFilter(Color.parseColor("#59FF0000"));
+                sendSystemMsg("请选中想要与之交换的玩家，然后按下确认");
+                whichHeroMine = "幽灵Alpha狼";
+                break;
+            case "狼人":
+                sendMsgToServer(gameStateMsg7,getString(R.string.幽灵),"幽灵狼人",myUserName,myUserName,myUserName);
+                break;
+            case "狼先知":
+                sendSystemMsg("你化身为了狼先知，你现在可以查看任意一位玩家的卡牌");
+                setCardClickListener("狼先知");
+                centercard1.setClickable(false);
+                centercard2.setClickable(false);
+                centercard3.setClickable(false);
+                sendSystemMsg("请选中想要查看身份的角色牌，然后按下确认");
+                whichHeroMine = "幽灵狼先知";
+                break;
+            case "失眠者":
+                whichHeroMine = getString(R.string.失眠者); //把自己变成失眠者以便最后阶段和失眠者一同醒来
+                //TODO 失眠者回合在提示其他玩家时要加入幽灵失眠者的提示
+                sendMsgToServer(gameStateMsg7,getString(R.string.幽灵),"幽灵失眠者",myUserName,myUserName,myUserName);
+                //自己和自己交换，msg5是自己的ID作为服务器端的map的key值便于操作
+                break;
+            case "皮匠":
+                sendMsgToServer(gameStateMsg7,getString(R.string.幽灵),"幽灵皮匠",myUserName,myUserName,myUserName);
+                break;
+            case "强盗":
+                sendSystemMsg("你化身为了强盗，你现在可以查看一位玩家的卡牌，并将自己与之交换");
+                setCardClickListener("强盗");
+                centercard1.setClickable(false);
+                centercard2.setClickable(false);
+                centercard3.setClickable(false);
+                userToPosition(myUserName).setClickable(false); //强盗不能点自己
+                whichHeroMine = "幽灵强盗";
+                break;
+            case "预言家":
+                sendSystemMsg("你化身为了预言家，你现在可以检视一位玩家或中央牌的身份");
+                setCardClickListener("预言家");
+                whichHeroMine = "幽灵预言家";
+                break;
+            case "捣蛋鬼":
+                sendSystemMsg("你化身为了捣蛋鬼，你现在可以交换任意两名玩家的卡牌，选中后按确认继续");
+                setCardClickListener("捣蛋鬼");
+                centercard1.setClickable(false);
+                centercard2.setClickable(false);
+                centercard3.setClickable(false);
+                whichHeroMine = "幽灵捣蛋鬼";
+                break;
+            case "女巫":
+                sendSystemMsg("你化身为了女巫，你现在可以检视一张中央卡牌，并将其与一名玩家交换，选中中央牌后按确认继续");
+                setCardClickListener("女巫");
+                //屏蔽玩家牌
+                refreshClickable(false);
+                refreshCardColor();
+                centercard1.setClickable(true);
+                centercard2.setClickable(true);
+                centercard3.setClickable(true);
+                whichHeroMine = "幽灵女巫";
+                break;
+            case "幽灵女巫2":
+                sendSystemMsg("幽灵女巫，你现在可将选中的中央卡牌与一名玩家交换，选中玩家牌后按确认继续");
                 setCardClickListener("女巫2");
                 firstSelect.setColorFilter(Color.parseColor("#59FF0000"));
                 centercard1.setClickable(false);
@@ -1502,8 +1675,10 @@ public class GameAcitvity extends BaseActivity {
         if (deadHeroName2 == null){
             //只死一人
             //TODO 还要考虑幽灵狼的情况
-            if (deadHeroName1.equals(getString(R.string.皮匠))){
-                if (whichHeroMine.equals(getString(R.string.皮匠))){
+            //TODO 幽灵皮匠结算有问题
+            //TODO 幽灵XXX的图片
+            if (deadHeroName1.contains(getString(R.string.皮匠))){
+                if (whichHeroMine.contains(getString(R.string.皮匠))){
                     return true;
                 }else{
                     return false;
@@ -1528,8 +1703,8 @@ public class GameAcitvity extends BaseActivity {
 
         }else {
             //死两人
-            if (deadHeroName1.equals(getString(R.string.皮匠))||deadHeroName2.equals(getString(R.string.皮匠))){
-                if (whichHeroMine.equals(getString(R.string.皮匠))){
+            if (deadHeroName1.contains(getString(R.string.皮匠))||deadHeroName2.contains(getString(R.string.皮匠))){
+                if (whichHeroMine.contains(getString(R.string.皮匠))){
                     return true;
                 }else{
                     return false;
@@ -1557,14 +1732,20 @@ public class GameAcitvity extends BaseActivity {
 
     private void showResultImage(JSONArray resultList)throws JSONException{
         //resultList得是用户名
+
         int playerNumber = userToHero.length();
         for (int i=0;i<playerNumber;i++){
             String heroName = userToHero.getString(playerNameList.get(i));
+            if(heroName.contains("幽灵"))heroName = "幽灵";  //显示幽灵。
             loadImageByHero(heroName,selectedList.get(i));
         }
+
+        //TODO 这里的被投死者变色和显示用户名没起作用
         if (resultList.length()==1){
+            sendSystemMsg(resultList.getString(0)+"被投票处决");
             userToPosition(resultList.getString(0)).setColorFilter(Color.parseColor("#59FF0000"));
         }else if (resultList.length()==2){
+            sendSystemMsg(resultList.getString(0)+"和"+resultList.getString(1)+"被投票处决");
             userToPosition(resultList.getString(0)).setColorFilter(Color.parseColor("#59FF0000"));
             userToPosition(resultList.getString(1)).setColorFilter(Color.parseColor("#59FF0000"));
         }
@@ -1675,6 +1856,9 @@ public class GameAcitvity extends BaseActivity {
     }
 
     private void refreshClickable(boolean clickable){
+        firstSelect = null;
+        secondSelect = null;
+
         player1.setClickable(clickable);
         player2.setClickable(clickable);
         player3.setClickable(clickable);
@@ -1690,7 +1874,10 @@ public class GameAcitvity extends BaseActivity {
         centercard1.setClickable(clickable);
         centercard2.setClickable(clickable);
         centercard3.setClickable(clickable);
-//        重置颜色
+}
+
+    private void refreshCardColor(){
+        //        重置颜色
         player1.setColorFilter(null);
         player2.setColorFilter(null);
         player3.setColorFilter(null);
@@ -1706,7 +1893,7 @@ public class GameAcitvity extends BaseActivity {
         centercard1.setColorFilter(null);
         centercard2.setColorFilter(null);
         centercard3.setColorFilter(null);
-}
+    }
 
     private void startCardMove(String role){
 
@@ -1749,6 +1936,21 @@ public class GameAcitvity extends BaseActivity {
             msgJson.put("msg1",msg1);
             msgJson.put("msg2",msg2);
             msgJson.put("msg3",msg3);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        myBinder.sendMsgToServer(msgJson.toString());
+    }
+
+    private void sendMsgToServer(final String msgType,final String msg1,final String msg2,final String msg3,final String msg4,final String msg5){
+        JSONObject msgJson = new JSONObject();
+        try {
+            msgJson.put("msgType",msgType);
+            msgJson.put("msg1",msg1);
+            msgJson.put("msg2",msg2);
+            msgJson.put("msg3",msg3);
+            msgJson.put("msg4",msg4);
+            msgJson.put("msg5",msg5);
         } catch (JSONException e) {
             e.printStackTrace();
         }

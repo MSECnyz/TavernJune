@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">TavernJune</string>
     <string name="ulwtips">\"曾经我没得选，现在我只想做个好人。\"</string>
+    <string name="bbtips">\"这笔生意，我自己做！\"</string>
+    <string name="lbtips">\"抢大副，有没有一起的？\"</string>
+    <string name="bhtips">\"等等，我去蹭个神志加成\"</string>
     <string name="username">我的名字</string>
     <string name="Alpha狼">狼Alpha</string>
     <string name="狼人">狼人</string>
@@ -15,6 +18,8 @@
     <string name="serverIP">47.95.237.255</string>
     <string name="heartPort">9901</string>
     <string name="gamePort">9902</string>
+    <string name="audioPortOut">9903</string>
+    <string name="audioPortIn">9904</string>
     <string name="registerHttpURL">http://47.95.237.255:8080/TavernJuneServer/user/register.action</string>
     <string name="loginHttpURL">http://47.95.237.255:8080/TavernJuneServer/user/login.action</string>
 

@@ -1,8 +1,10 @@
 package com.msecnyz.tavernjune;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -13,19 +15,23 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.ashokvarma.bottomnavigation.BottomNavigationItem;
+import com.msecnyz.tavernjune.legionsupport.AudioChat;
 import com.msecnyz.tavernjune.mainfragment.FriendsFragment;
 import com.msecnyz.tavernjune.mainfragment.PlayFragment;
 import com.msecnyz.tavernjune.mainfragment.UserFragment;
 import com.msecnyz.tavernjune.mainfragment.WorldFragment;
+import com.msecnyz.tavernjune.net.SocketOperation;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainActivity extends BaseActivity{
@@ -33,8 +39,10 @@ public class MainActivity extends BaseActivity{
     public static MainActivity killmyself;
     static boolean touchBack = false;
 
-    private final  String JoinIn = "#进#入#游#戏";
-    private final String exit = "#退#出#游#戏";
+    private final String msgType1 = "#发#送#用#户";
+
+    private String myUserName;
+    private String TAG = "MainActivity";
 
     private BottomNavigationBar bottomNavigationBar;
     private ViewPager viewPager;
@@ -47,10 +55,26 @@ public class MainActivity extends BaseActivity{
 
     private FirstService.MsgBinder myBinder;
 
+//    AudioChat audioChat;
+
     Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
-            super.handleMessage(msg);
+            try {
+                String readMsg = (String)msg.obj;
+                JSONObject msgJson = new JSONObject(readMsg);
+                Log.w(TAG,"XXXXXXXXXX收到msg###"+msgJson.toString());
+                String serverMsg = msgJson.getString("msgType");
+//                String aName = msgJson.getString("msg1");
+                //aName决定了谁发出#分#配#房#间。
+                if (serverMsg.equals("#进#行#语#音")){
+//                    audioChat.ready();
+                }else if (serverMsg.equals("#房#间#就#绪")){
+//                    audioChat.start();
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     };
 
@@ -136,7 +160,17 @@ public class MainActivity extends BaseActivity{
             @Override
             public void onTabReselected(int position) {}
         });
+
+        SharedPreferences sharedPreferences = this.getSharedPreferences("userIdInformation", Context.MODE_PRIVATE);
+        myUserName = sharedPreferences.getString("userId","userId");
+
+        Intent startIntent = new Intent(this, FirstService.class);
+        bindService(startIntent, serviceConnection, BIND_AUTO_CREATE);
+
+//        audioChat = new AudioChat(this,false);
+//        audioChat.setMyUserName(myUserName);
     }
+
 
     @Override
     protected void activityReady() {
@@ -148,10 +182,6 @@ public class MainActivity extends BaseActivity{
             if (FirstActivity.killMyself!=null)FirstActivity.killMyself.finish();
             if (SplashActivity.killMyself!=null)SplashActivity.killMyself.finish();
         }
-
-//        Intent startIntent = new Intent(this, FirstService.class);
-//        bindService(startIntent, serviceConnection, BIND_AUTO_CREATE);
-
     }
 
     public static class FragAdapter extends FragmentPagerAdapter{
@@ -202,18 +232,19 @@ public class MainActivity extends BaseActivity{
     @Override
     protected void onDestroy() {
 //        sendMsgToServer(exit);
-//        unbindService(serviceConnection);
         super.onDestroy();
+        unbindService(serviceConnection);
     }
 
-    private void sendMsgToServer(final String msg){
+    private void sendMsgToServer(final String msg,String myUserName){
         JSONObject msgJson = new JSONObject();
         try {
             msgJson.put("msgType",msg);
+            msgJson.put("msg1",myUserName);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        myBinder.sendMsgToServer(msgJson);
+        myBinder.sendMsgToServer(msgJson.toString());
     }
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -226,7 +257,9 @@ public class MainActivity extends BaseActivity{
             //Activity需要主动通信的时候，只需用binder调用方法来调用service内部的方法就好了。目前是这样的
             myBinder.setHandler(handler);
 
-            sendMsgToServer(JoinIn);
+            Log.w(TAG,"绑定service成功");
+            //TODO 判断联网状态，无用户名离线情况下程序会自动跳出
+            sendMsgToServer(msgType1,myUserName);
 
 //            myService = myBinder.getService();
 //            myService.setServiceListener(new FirstServiceListener() {

@@ -2,6 +2,7 @@ package com.msecnyz.tavernjune.net;
 
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import java.io.ObjectOutputStream;
 import java.lang.Object;
@@ -16,6 +17,8 @@ public class SocketOperation {
 
     private String ipAddress;
     private int port;
+
+    private String TAG =  "SocketOperation";
 
     private Socket socket;
     private ObjectOutputStream oosTos;
@@ -41,7 +44,10 @@ public class SocketOperation {
                         //readObject阻塞式
                         Message message = new Message();
                         message.obj = someObj;
+                        Log.w(TAG,"######"+someObj.toString());
+                        Log.w(TAG,"######"+msgHandler.toString());
                         if (msgHandler!=null){
+                            Log.w(TAG,"######aaaaa#####");
                             msgHandler.sendMessage(message);
                         }
                     }
@@ -56,6 +62,7 @@ public class SocketOperation {
 
     public void setHandler(Handler handler){
         msgHandler = handler;
+        Log.w(TAG,"setNewHandler");
     }
 
 
