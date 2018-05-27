@@ -38,6 +38,10 @@
         <activity android:name=".legionsupport.PortraitActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity android:name=".social.NewFriendsActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".social.ChatActivity"
+            android:screenOrientation="portrait"/>
 
         
         <provider

@@ -22,5 +22,12 @@
     <string name="audioPortIn">9904</string>
     <string name="registerHttpURL">http://47.95.237.255:8080/TavernJuneServer/user/register.action</string>
     <string name="loginHttpURL">http://47.95.237.255:8080/TavernJuneServer/user/login.action</string>
+    <string name="searchUserHttpURL">http://47.95.237.255:8080/TavernJuneServer/user/searchUser.action</string>
+    <string name="addFriendsHttpURL">http://47.95.237.255:8080/TavernJuneServer/user/addFriend.action</string>
+    <string name="sendChatMsgURL">http://47.95.237.255:8080/TavernJuneServer/user/chat.action</string>
+    <string name="ReciveChatMsgURL">http://47.95.237.255:8080/TavernJuneServer/user/askChat.action</string>
+    <string name="requestFriendURL">http://47.95.237.255:8080/TavernJuneServer/user/friendsList.action</string>
+    <string name="confirmNewFriendURL">http://47.95.237.255:8080/TavernJuneServer/user/askMsg.action</string>
+    <string name="newsUrl">http://47.95.237.255:8080/TavernJuneServer/news/push.action</string>
 
 </resources>

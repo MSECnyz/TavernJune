@@ -184,8 +184,8 @@ public class GameAcitvity extends BaseActivity {
     }
 
     @Override
-    protected void setView() {
-        super.setView();
+    protected void setInterface() {
+        super.setInterface();
         int flag = WindowManager.LayoutParams.FLAG_FULLSCREEN;
         getWindow().setFlags(flag,flag);
         setContentView(R.layout.onuwolf_game);

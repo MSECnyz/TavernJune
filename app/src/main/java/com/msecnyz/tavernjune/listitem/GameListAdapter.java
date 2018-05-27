@@ -22,13 +22,6 @@ public class GameListAdapter extends RecyclerView.Adapter<GameListAdapter.ViewHo
     private Context mContext;
     private List<GameListItem> gameList;
 
-    private String gameName;
-    private String gameType;
-    private String gameSynopsis;
-
-    private int gameImage;
-    private int synopsisImage;
-
     static class ViewHolder extends RecyclerView.ViewHolder{
         View gameCard;
         CardView cardView;

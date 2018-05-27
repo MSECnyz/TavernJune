@@ -15,7 +15,7 @@ public class BaseActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         activityReady();
-        setView();
+        setInterface();
         initViews();
         setListener();
     }
@@ -24,12 +24,12 @@ public class BaseActivity extends AppCompatActivity {
 
     }
 
-    protected void setView(){
-
+    protected void setInterface(){
+        //设定初始界面
     }
 
     protected void initViews(){
-
+        //初始化控件
     }
 
     protected void setListener(){

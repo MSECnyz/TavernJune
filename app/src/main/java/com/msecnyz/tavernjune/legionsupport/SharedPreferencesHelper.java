@@ -8,7 +8,7 @@ import java.util.List;
 
 public class SharedPreferencesHelper {
 	
-	public static String STORE_NAME = "Settings";
+	public static String STORE_NAME = "userIdInformation";
 
 	public static void saveString(Context context, String key, String value){
 		SharedPreferences settings = context.getSharedPreferences(STORE_NAME, Context.MODE_PRIVATE);

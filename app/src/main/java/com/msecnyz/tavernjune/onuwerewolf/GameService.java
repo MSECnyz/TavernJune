@@ -11,6 +11,7 @@ import android.util.Log;
 import com.msecnyz.tavernjune.R;
 import com.msecnyz.tavernjune.legionsupport.GameServiceListener;
 import com.msecnyz.tavernjune.net.SocketOperation;
+import com.msecnyz.tavernjune.social.SocialServiceListener;
 
 /**
  * Created by neo on 2017/11/2.
@@ -18,7 +19,7 @@ import com.msecnyz.tavernjune.net.SocketOperation;
 
 public class GameService extends Service{
     private GameService.GameBinder gameBinder = new GameBinder();
-    private GameServiceListener gameServiceListener;
+    private SocialServiceListener socialServiceListener;
     SocketOperation gameSocket;
 
     @Override
@@ -28,7 +29,7 @@ public class GameService extends Service{
     }
 
     private void sendMsg(String msg){
-        gameServiceListener.sendGameMsg(msg);
+        socialServiceListener.sendGameMsg(msg);
     }
 
     @Override
@@ -42,8 +43,8 @@ public class GameService extends Service{
         super.onDestroy();
     }
 
-    public void setServiceListener(GameServiceListener serviceListener){
-        gameServiceListener = serviceListener;
+    public void setServiceListener(SocialServiceListener serviceListener){
+        socialServiceListener = serviceListener;
     }
 
     @Nullable
